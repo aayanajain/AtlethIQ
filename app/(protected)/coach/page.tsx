@@ -1,14 +1,35 @@
+"use client";
 // app/(protected)/coach/page.tsx
 //
-// Coach dashboard — a post-login page (inside the (protected) area).
-// PLACEHOLDER for now: a coach-flavoured dashboard that says "under
-// development". Deliberately WIDER and more table/overview-shaped than the
-// player dashboard, since a coach scans a whole squad rather than one journey.
-// We'll design the real squad view (roster, trends, mismatch flags) later.
+// Coach dashboard — the squad overview. It loads the REAL list of players from
+// Supabase and shows them as a roster; each row links to that player's detail
+// page. "Needs attention" flags depend on the AI, so that count is a
+// placeholder for now.
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { supabase } from "@/src/lib/supabase";
+import type { Player } from "@/src/types";
+import { Card, Badge, SectionTitle } from "@/src/components/ui";
 
 export default function CoachDashboardPage() {
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Load the whole squad once on mount.
+  useEffect(() => {
+    async function loadSquad() {
+      const { data } = await supabase
+        .from("players")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      setPlayers((data as Player[]) ?? []);
+      setLoading(false);
+    }
+    loadSquad();
+  }, []);
+
   return (
     <main className="mx-auto max-w-4xl px-6 py-6">
       {/* Top bar */}
@@ -19,44 +40,71 @@ export default function CoachDashboardPage() {
         </Link>
       </header>
 
-      {/* Heading */}
       <h1 className="mt-4 text-2xl font-bold text-zinc-900 dark:text-zinc-50">
         Squad dashboard
       </h1>
 
-      {/* Under-development banner (indigo, to differ from the player side) */}
-      <div className="mt-4 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-800 dark:border-indigo-900 dark:bg-indigo-950 dark:text-indigo-200">
-        🚧 Under development — your squad overview is coming here.
-      </div>
-
-      {/* Placeholder overview tiles (a wider, glanceable layout) */}
+      {/* Overview tiles: squad size is real; the rest are placeholders. */}
       <div className="mt-6 grid gap-3 sm:grid-cols-3">
-        <PlaceholderTile title="Your squad" hint="All your players in one place" />
-        <PlaceholderTile title="Needs attention" hint="Fatigue, plateau & mismatch flags" />
-        <PlaceholderTile title="Set focus areas" hint="Direct what each player works on" />
+        <Card>
+          <SectionTitle>Squad size</SectionTitle>
+          <p className="mt-1 text-2xl font-bold text-zinc-900 dark:text-zinc-50">
+            {loading ? "—" : players.length}
+          </p>
+        </Card>
+        <Card>
+          <SectionTitle>Needs attention</SectionTitle>
+          <p className="mt-1 text-2xl font-bold text-zinc-400">—</p>
+          <p className="text-xs text-zinc-400">AI flags coming soon</p>
+        </Card>
+        <Card>
+          <SectionTitle>This week</SectionTitle>
+          <p className="mt-1 text-2xl font-bold text-zinc-400">—</p>
+          <p className="text-xs text-zinc-400">Sessions logged</p>
+        </Card>
       </div>
 
-      {/* Placeholder roster table */}
-      <div className="mt-6 overflow-hidden rounded-xl border border-zinc-200 opacity-70 dark:border-zinc-800">
-        <div className="grid grid-cols-3 gap-2 border-b border-zinc-200 bg-zinc-50 px-4 py-2 text-xs font-medium text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900">
-          <span>Player</span>
-          <span>Position</span>
-          <span>Status</span>
-        </div>
-        <div className="px-4 py-6 text-center text-sm text-zinc-400">
-          Your players will appear here.
-        </div>
-      </div>
+      {/* Roster */}
+      <section className="mt-8">
+        <SectionTitle>Your players</SectionTitle>
+
+        {loading ? (
+          <p className="mt-2 text-zinc-500">Loading…</p>
+        ) : players.length === 0 ? (
+          <Card className="mt-2 text-center">
+            <p className="text-zinc-500">No players yet.</p>
+            <Link
+              href="/player/setup"
+              className="mt-2 inline-block text-sm font-medium text-indigo-600 hover:underline"
+            >
+              Add a player →
+            </Link>
+          </Card>
+        ) : (
+          <ul className="mt-2 space-y-2">
+            {players.map((p) => (
+              <li key={p.id}>
+                {/* Each player links to their detail page. */}
+                <Link
+                  href={`/coach/${p.id}`}
+                  className="flex items-center justify-between rounded-xl border border-zinc-200 px-4 py-3 transition hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
+                >
+                  <div>
+                    <div className="font-medium text-zinc-900 dark:text-zinc-50">
+                      {p.name}
+                    </div>
+                    <div className="text-sm text-zinc-500">age {p.age}</div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge color="indigo">{p.position}</Badge>
+                    <span className="text-zinc-400">›</span>
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </main>
-  );
-}
-
-// A wide overview tile standing in for a future coach feature.
-function PlaceholderTile({ title, hint }: { title: string; hint: string }) {
-  return (
-    <div className="rounded-xl border border-zinc-200 p-4 opacity-70 dark:border-zinc-800">
-      <div className="font-medium text-zinc-900 dark:text-zinc-50">{title}</div>
-      <div className="mt-1 text-sm text-zinc-500">{hint}</div>
-    </div>
   );
 }
