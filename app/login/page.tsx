@@ -1,39 +1,46 @@
 "use client";
 // app/login/page.tsx
 //
-// Login — a PUBLIC page at "/login". This is the doorway into the app.
-// It has the Player / Coach toggle you asked for: the user picks which side
-// they're logging into, and we send them to that world.
-//
-// SKELETON for now: it does NOT check a real password yet. The "Continue"
-// button just routes to the right home based on the selected role. When we
-// decide on auth (real Supabase Auth vs a demo toggle), the real check goes
-// in handleContinue() below.
+// PUBLIC login page. Keeps the Player / Coach toggle:
+//   - Player: REAL login (email + password checked by Supabase). On success we
+//     go to the player dashboard.
+//   - Coach: still a demo doorway (no accounts yet) — it just opens the coach
+//     placeholder. Real coach auth comes later.
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { supabase } from "@/src/lib/supabase";
 
-// The two roles a user can log in as.
 type Role = "player" | "coach";
 
 export default function LoginPage() {
-  const router = useRouter(); // lets us send the user to another page in code
+  const router = useRouter();
   const [role, setRole] = useState<Role>("player");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function handleContinue(e: React.FormEvent) {
+  async function handlePlayerLogin(e: React.FormEvent) {
     e.preventDefault();
+    setBusy(true);
+    setError(null);
 
-    // TODO (when we wire auth): actually verify the user here with Supabase
-    // before letting them in. For now we just route based on the chosen role
-    // so we can build and click through the protected pages.
-    if (role === "player") {
-      router.push("/player");
-    } else {
-      router.push("/coach");
+    // Real auth: Supabase checks the email + password against the database.
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (signInError) {
+      setError(signInError.message);
+      setBusy(false);
+      return;
     }
+
+    // Logged in — the session cookie is set, so the /player gate will let us in.
+    router.push("/player");
   }
 
   return (
@@ -51,60 +58,76 @@ export default function LoginPage() {
 
       {/* --- Player / Coach toggle --- */}
       <div className="mt-6 grid grid-cols-2 gap-2 rounded-full bg-zinc-100 p-1 dark:bg-zinc-800">
-        <ToggleButton
-          active={role === "player"}
-          onClick={() => setRole("player")}
-        >
+        <ToggleButton active={role === "player"} onClick={() => setRole("player")}>
           ⚽ Player
         </ToggleButton>
-        <ToggleButton
-          active={role === "coach"}
-          onClick={() => setRole("coach")}
-        >
+        <ToggleButton active={role === "coach"} onClick={() => setRole("coach")}>
           📋 Coach
         </ToggleButton>
       </div>
 
-      {/* --- Login form (skeleton fields) --- */}
-      <form onSubmit={handleContinue} className="mt-6 space-y-4">
-        <label className="block">
-          <span className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Email
-          </span>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            className={inputClass}
-          />
-        </label>
+      {role === "player" ? (
+        // --- Real player login ---
+        <form onSubmit={handlePlayerLogin} className="mt-6 space-y-4">
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              Email
+            </span>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="you@example.com"
+              className={inputClass}
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              Password
+            </span>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              placeholder="••••••••"
+              className={inputClass}
+            />
+          </label>
 
-        <label className="block">
-          <span className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Password
-          </span>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            className={inputClass}
-          />
-        </label>
+          <button
+            type="submit"
+            disabled={busy}
+            className="w-full rounded-lg bg-emerald-600 px-4 py-2.5 font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+          >
+            {busy ? "Logging in…" : "Log in"}
+          </button>
 
-        <button
-          type="submit"
-          className="w-full rounded-lg bg-emerald-600 px-4 py-2.5 font-medium text-white hover:bg-emerald-700"
-        >
-          Continue as {role === "player" ? "Player" : "Coach"}
-        </button>
-      </form>
+          {error && <p className="text-sm text-red-600">{error}</p>}
 
-      {/* Note to ourselves while it's a skeleton. */}
-      <p className="mt-4 text-center text-xs text-zinc-400">
-        (demo login — no password check yet)
-      </p>
+          <p className="text-center text-sm text-zinc-500">
+            New here?{" "}
+            <Link href="/signup" className="font-medium text-emerald-600 hover:underline">
+              Create an account
+            </Link>
+          </p>
+        </form>
+      ) : (
+        // --- Coach demo doorway (no real auth yet) ---
+        <div className="mt-6">
+          <p className="rounded-lg bg-zinc-100 px-4 py-3 text-sm text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+            Coach accounts are coming soon. For now you can preview the coach
+            dashboard.
+          </p>
+          <button
+            onClick={() => router.push("/coach")}
+            className="mt-3 w-full rounded-lg bg-indigo-600 px-4 py-2.5 font-medium text-white hover:bg-indigo-700"
+          >
+            Preview coach dashboard →
+          </button>
+        </div>
+      )}
     </main>
   );
 }
@@ -113,7 +136,6 @@ const inputClass =
   "w-full rounded-lg border border-zinc-300 px-3 py-2 text-zinc-900 " +
   "outline-none focus:border-emerald-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50";
 
-// One half of the role toggle. Highlights when it's the active choice.
 function ToggleButton({
   active,
   onClick,
