@@ -1,65 +1,89 @@
-import Image from "next/image";
+// app/page.tsx
+//
+// Home — the PUBLIC marketing landing page at "/". No login required.
+// This is the first thing a visitor sees. Its job: explain what AthletIQ is
+// and push people toward Login. Mobile-first (designed for a phone, scales up).
+//
+// Plain server component (no "use client") — it's just content and links.
 
-export default function Home() {
+import Link from "next/link";
+import PublicHeader from "@/src/components/PublicHeader";
+
+export default function HomePage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen">
+      <PublicHeader />
+
+      {/* Hero section */}
+      <main className="mx-auto max-w-3xl px-6 py-20 text-center">
+        <h1 className="text-4xl font-bold tracking-tight text-zinc-900 sm:text-5xl dark:text-zinc-50">
+          Your AI football
+          <br />
+          development coach
+        </h1>
+
+        <p className="mx-auto mt-6 max-w-xl text-lg text-zinc-600 dark:text-zinc-400">
+          Log your training in plain language. AthletIQ turns it into a
+          personalized, position-aware plan that adapts week over week — and
+          keeps your coach in the loop.
+        </p>
+
+        {/* Primary calls to action */}
+        <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Link
+            href="/login"
+            className="w-full rounded-full bg-emerald-600 px-8 py-3 font-medium text-white hover:bg-emerald-700 sm:w-auto"
+          >
+            Get started
+          </Link>
+          <Link
+            href="/about"
+            className="w-full rounded-full border border-zinc-300 px-8 py-3 font-medium text-zinc-900 hover:bg-zinc-50 sm:w-auto dark:border-zinc-700 dark:text-zinc-50 dark:hover:bg-zinc-900"
+          >
+            Learn more
+          </Link>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Three simple value props */}
+        <div className="mt-20 grid gap-6 text-left sm:grid-cols-3">
+          <Feature
+            emoji="📝"
+            title="Just describe it"
+            body="Type how training went in your own words. No forms, no jargon."
+          />
+          <Feature
+            emoji="📈"
+            title="See your progress"
+            body="Track passing, finishing, dribbling, stamina and your weak foot over time."
+          />
+          <Feature
+            emoji="🤝"
+            title="Coach in the loop"
+            body="Your coach sets focus areas and the AI flags when something's off."
+          />
         </div>
       </main>
+    </div>
+  );
+}
+
+// A small value-prop card used in the hero grid.
+function Feature({
+  emoji,
+  title,
+  body,
+}: {
+  emoji: string;
+  title: string;
+  body: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-zinc-200 p-5 dark:border-zinc-800">
+      <div className="text-2xl">{emoji}</div>
+      <h3 className="mt-2 font-semibold text-zinc-900 dark:text-zinc-50">
+        {title}
+      </h3>
+      <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{body}</p>
     </div>
   );
 }

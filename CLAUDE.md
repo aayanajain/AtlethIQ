@@ -5,7 +5,9 @@ An AI-powered web app for youth football development (project name: AthletIQ). Y
 session data in plain language; an LLM turns it into a personalized,
 position-aware development plan that adapts week over week. A two-sided
 player↔coach loop lets coaches set focus areas, and the AI flags mismatches
-(e.g. fatigue, plateau). Built for a 10-day hackathon by a 2-person team.
+(e.g. fatigue, plateau). Built over ~10 days by a 2-person team for a hackathon,
+but scoped as a real PRODUCT (full site with public pages + authenticated app),
+not just a demo.
 
 The goal is an affordable "AI sports scientist + mentor" for young athletes in
 under-resourced areas who lack access to elite academy tools, plus a tool that
@@ -19,7 +21,7 @@ helps overstretched coaches track each player individually.
 ## Tech stack (do not change without asking)
 - Next.js (App Router) + TypeScript + Tailwind CSS
 - Next.js API routes for the server layer (NO separate Express server)
-- Supabase for database (Postgres) + Storage (for meal photos)
+- Supabase for database (Postgres) + Storage (meal photos) + Auth (real login)
 - A multimodal LLM API for reasoning + vision, called ONLY from the server side
 - Recharts for the development-curve charts
 - Deploy target: Vercel
@@ -33,7 +35,27 @@ helps overstretched coaches track each player individually.
    / JSON output mode, strip any markdown fences, and wrap JSON.parse in
    try/catch on the server before sending to the client.
 
-## Data model (3 core objects)
+## Site structure (this is a full product, not one page)
+PRE-AUTH (public, no login):
+- Landing / home page: explains AthletIQ, its value, who it's for. Clear CTA to
+  sign up.
+- How-it-works / features section (can be part of landing or its own page).
+- Login page and Sign-up page (Supabase Auth: email/password to start).
+POST-AUTH (requires login — protect these routes):
+- Dashboard (role-aware: player sees their stuff, coach sees their squad).
+- Player: profile, session logging, development plan view, progress/charts.
+- Coach: squad overview, per-player view, set focus/directive, attention list.
+- Shared: account/settings, logout.
+
+AUTH MODEL:
+- Use real Supabase Auth (email/password first; Google optional later).
+- Users have a role: "player" or "coach". Store role in a profiles table linked
+  to the Supabase auth user id. Route/redirect based on role after login.
+- Protect all post-auth routes: unauthenticated users get redirected to login.
+- Because users are minors, keep sign-up simple and collect minimal data.
+
+## Data model (core objects)
+- Profile: id (= Supabase auth user id), role ("player" | "coach"), displayName.
 - Player: id, name, age, position (striker/midfielder/defender/goalkeeper),
   currentFocus, goal, language.
 - Session: id, playerId, date, plain-language note, parsed structured metrics
@@ -111,7 +133,13 @@ Tier 3 (stretch, only if solid):
   code over clever abstractions. Explain non-obvious choices in brief comments.
 - Build in small pieces that each work before moving on. Do not scaffold all
   16 features at once.
-- For the demo: one seeded fictional player with ~3 weeks of history + one coach
-  viewing them is enough. Real auth can be a simple player-mode/coach-mode
-  toggle; do not build full authentication unless asked.
+- This is scoped as a real product: build real Supabase Auth and both public
+  (pre-auth) and authenticated (post-auth) pages.
+- IMPORTANT SEQUENCING: the AI core loop (log -> parse -> plan -> reconcile) is
+  the differentiator and the riskiest part. Build and prove that loop working
+  FIRST (even on a single seeded player before auth is fully wired), THEN wrap
+  the product shell (landing pages, auth, navigation, polish) around it. Do not
+  spend the first several days only on landing pages and login flows.
+- Still seed one fictional player with ~3 weeks of history so the "it remembered
+  and adapted" moment is instant and demoable.
 - When unsure about a product decision, ask rather than guessing.
