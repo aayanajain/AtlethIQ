@@ -13,8 +13,31 @@
 // Small helper unions
 // ---------------------------------------------------------------------------
 
-/** The four positions we support. Using a union keeps typos out. */
-export type Position = "striker" | "midfielder" | "defender" | "goalkeeper";
+/**
+ * The playing role (position). We use SPECIFIC roles rather than broad
+ * positions, because the app tailors which attributes a session is rated on —
+ * a #6 (defensive mid) is judged very differently from a striker. The
+ * human-friendly labels + each role's attribute set live in
+ * src/lib/positions.ts.
+ */
+export type Position =
+  | "goalkeeper"
+  | "centre-back"
+  | "full-back"
+  | "defensive-mid"
+  | "central-mid"
+  | "attacking-mid"
+  | "winger"
+  | "striker";
+
+/** What kind of session it was — this drives which fields the log shows. */
+export type SessionType =
+  | "match"
+  | "team"
+  | "solo"
+  | "gym"
+  | "fitness"
+  | "recovery";
 
 /**
  * The football skills we track over time. Kept as a named type so the same
@@ -56,22 +79,19 @@ export interface Player {
 // ---------------------------------------------------------------------------
 
 /**
- * The structured metrics an LLM pulls out of the player's plain-language note.
- * These are the five tracked football skills. Values are simple numeric
- * ratings (e.g. 1–10) so we can chart trends over weeks.
+ * The performance ratings for a session: a map of attribute key -> 1–10.
+ * The attribute keys depend on the player's role (see ROLE_ATTRIBUTES in
+ * src/lib/positions.ts) — e.g. a #6 stores "positioning", "interceptions", etc.
+ * Kept flexible (a plain object) so different roles store different attributes
+ * without changing this type.
  */
-export interface SessionMetrics {
-  passing: number;
-  finishing: number;
-  dribbling: number;
-  stamina: number;
-  weakFoot: number;
-}
+export type SessionMetrics = Record<string, number>;
 
 /**
- * One logged training/match session. The player writes `note` in plain
- * language; the parse-session endpoint fills in `metrics`, `fatigue`, and
- * `mood`. Meal fields are optional and only used by the fueling feature.
+ * One logged training/match session.
+ * The player picks a session type, ticks the drills they did, and writes a
+ * short reflection (`note`); the parse-session endpoint reads that and fills in
+ * `metrics` (the role's attribute ratings). Meal fields are optional.
  */
 export interface Session {
   id: string;
@@ -79,13 +99,19 @@ export interface Session {
   playerId: string;
   /** ISO date string, e.g. "2026-07-08". Kept as a string for easy sorting. */
   date: string;
-  /** The raw plain-language log the player typed in. */
+  /** What kind of session this was (match, team, solo, ...). */
+  sessionType?: SessionType;
+  /** The drills the player ticked (drill ids from src/lib/drills.ts). */
+  drills?: string[];
+  /** The player's short plain-language reflection on the session. */
   note: string;
-  /** Structured metrics the LLM parsed out of `note`. */
+  /** Performance ratings (attribute key -> 1–10) for the player's role. */
   metrics: SessionMetrics;
-  /** How tired the player felt (e.g. 1 = fresh, 10 = exhausted). */
-  fatigue: number;
-  /** How the player felt (e.g. 1 = low, 10 = great). */
+  /** Effort / RPE for the whole session (1 = easy, 10 = maximal). */
+  effort?: number;
+  /** (Legacy) how tired the player felt. Optional now that we use `effort`. */
+  fatigue?: number;
+  /** How the player felt (1 = low, 10 = great). */
   mood: number;
 
   // --- Optional fueling fields (Tier 2 feature) ---
