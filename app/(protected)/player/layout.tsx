@@ -15,6 +15,7 @@ import { supabase } from "@/src/lib/supabase";
 // The sidebar links. `underDev` shows an amber "under development" dot.
 const NAV = [
   { href: "/player", label: "Dashboard", icon: "🏠", underDev: false },
+  { href: "/player/session", label: "Today's Session", icon: "📝", underDev: false },
   { href: "/player/mentor", label: "AI mentor", icon: "🤖", underDev: true },
 ];
 

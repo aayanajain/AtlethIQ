@@ -13,8 +13,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/src/lib/supabase";
 import type { Player, Position } from "@/src/types";
-
-const POSITIONS: Position[] = ["striker", "midfielder", "defender", "goalkeeper"];
+import { ROLES } from "@/src/lib/positions";
 
 export default function PlayerSetupPage() {
   const router = useRouter();
@@ -102,9 +101,9 @@ export default function PlayerSetupPage() {
         </Field>
         <Field label="Position">
           <select className={inputClass} value={position} onChange={(e) => setPosition(e.target.value as Position)}>
-            {POSITIONS.map((p) => (
-              <option key={p} value={p}>
-                {p}
+            {ROLES.map((r) => (
+              <option key={r.slug} value={r.slug}>
+                {r.label}
               </option>
             ))}
           </select>
