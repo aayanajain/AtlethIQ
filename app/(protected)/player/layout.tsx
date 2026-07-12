@@ -16,6 +16,7 @@ import { supabase } from "@/src/lib/supabase";
 const NAV = [
   { href: "/player", label: "Dashboard", icon: "🏠", underDev: false },
   { href: "/player/session", label: "Today's Session", icon: "📝", underDev: false },
+  { href: "/player/plan", label: "Progress", icon: "📈", underDev: false },
   { href: "/player/mentor", label: "AI mentor", icon: "🤖", underDev: true },
 ];
 

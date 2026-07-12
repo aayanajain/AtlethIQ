@@ -182,15 +182,30 @@ export interface DrillPlan {
   why: string;
 }
 
+/** What the player is planning FOR — this tailors the plan. */
+export type PlanHorizon = "next-session" | "week" | "match" | "tournament";
+
+/** One step in a multi-day plan (a day or a session). */
+export interface ScheduleItem {
+  /** e.g. "Mon", "Session 1", "Game day". */
+  label: string;
+  /** What to do then. */
+  focus: string;
+}
+
 /**
- * The full development plan returned by /api/generate-plan.
- * Must match this shape exactly — it is the interface between frontend
- * and backend (see "The JSON contract" in CLAUDE.md).
+ * The development plan returned by /api/generate-plan. The core fields match
+ * CLAUDE.md's JSON contract; `summary` and `schedule` are extras that tailor the
+ * plan to its horizon (e.g. a week or tournament plan includes a schedule).
  */
 export interface Plan {
+  /** One-line framing of what this plan is for. */
+  summary?: string;
   trends: Trend[];
   /** `null` when there is no coach-vs-reality mismatch to report. */
   mismatchFlag: MismatchFlag | null;
   nextFocus: NextFocus;
   drillPlan: DrillPlan[];
+  /** A light day/session-by-session schedule (week & tournament plans). */
+  schedule?: ScheduleItem[];
 }
