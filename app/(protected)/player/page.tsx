@@ -55,7 +55,12 @@ export default function PlayerDashboardPage() {
       if (me) {
         const [{ data: rows }, { data: planRow }] = await Promise.all([
           supabase.from("sessions").select("*").order("date", { ascending: false }),
-          supabase.from("plans").select("plan").limit(1).maybeSingle(),
+          supabase
+            .from("plans")
+            .select("plan")
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle(),
         ]);
         setSessions((rows as Session[]) ?? []);
         setPlan((planRow?.plan as Plan) ?? null);
@@ -82,10 +87,9 @@ export default function PlayerDashboardPage() {
         return;
       }
       const newPlan = data.plan as Plan;
-      await supabase.from("plans").upsert(
-        { playerId: player.id, horizon: "week", plan: newPlan, updated_at: new Date().toISOString() },
-        { onConflict: "playerId" }
-      );
+      // Append to the plans history (one row per generation) — the Journey and
+      // the "next focus" shortcut both read the most recent row.
+      await supabase.from("plans").insert({ playerId: player.id, horizon: "week", plan: newPlan });
       setPlan(newPlan);
     } catch {
       setGenError("Could not reach the server.");
