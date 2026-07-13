@@ -106,6 +106,61 @@ export function drillLabel(id: string): string {
   return DRILLS.find((d) => d.id === id)?.label ?? id;
 }
 
+// True for a player-typed "add your own" drill (its id isn't in the library).
+export function isCustomDrill(id: string): boolean {
+  return !DRILLS.some((d) => d.id === id);
+}
+
+// The library has many fine-grained groups; we roll them up into 2–3 broad
+// buckets so the picker shows a few tidy categories instead of a long list.
+const BROAD_CATEGORY: Record<string, string> = {
+  // Football (team / solo)
+  "Warm-up": "Technical",
+  "Possession & passing": "Technical",
+  "Dribbling & 1v1": "Technical",
+  "Finishing & attacking": "Technical",
+  Defending: "Tactical",
+  "Small-sided games": "Tactical",
+  "Set pieces": "Tactical",
+  "Physical / individual": "Physical",
+  // Gym
+  "Lower body": "Strength",
+  "Upper body": "Strength",
+  Core: "Core & mobility",
+  Mobility: "Core & mobility",
+  // Fitness
+  Running: "Running",
+  "Speed & agility": "Speed & agility",
+};
+
+const CATEGORY_ORDER = [
+  "Technical",
+  "Tactical",
+  "Physical",
+  "Strength",
+  "Core & mobility",
+  "Running",
+  "Speed & agility",
+];
+
+// Suggested drills, grouped into the broad categories above (role-relevant
+// ones still float to the top within each category).
+export function suggestDrillsByCategory(
+  sessionType: "team" | "solo" | "gym" | "fitness",
+  role: Position
+): { category: string; drills: Drill[] }[] {
+  const byCat = new Map<string, Drill[]>();
+  for (const d of suggestDrills(sessionType, role)) {
+    const cat = BROAD_CATEGORY[d.group] ?? d.group;
+    if (!byCat.has(cat)) byCat.set(cat, []);
+    byCat.get(cat)!.push(d);
+  }
+  return CATEGORY_ORDER.filter((c) => byCat.has(c)).map((c) => ({
+    category: c,
+    drills: byCat.get(c)!,
+  }));
+}
+
 // Suggested drills for a session type + role: role-relevant ones first, then
 // the rest for that session type. Used to pre-load the tap-to-add chips.
 export function suggestDrills(

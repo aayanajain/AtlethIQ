@@ -18,6 +18,24 @@ export function todayKey(): string {
   return toDateKey(new Date());
 }
 
+// Is this date key in the current calendar WEEK (Monday–Sunday)?
+export function isThisWeek(dateKey: string): boolean {
+  const now = new Date();
+  // How many days since Monday. getDay(): Sun=0..Sat=6 → make Mon=0..Sun=6.
+  const sinceMonday = (now.getDay() + 6) % 7;
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - sinceMonday);
+  // "YYYY-MM-DD" strings sort the same as dates, so a plain compare works.
+  return dateKey >= toDateKey(monday);
+}
+
+// Is this date key in the current calendar MONTH?
+export function isThisMonth(dateKey: string): boolean {
+  const now = new Date();
+  const prefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  return dateKey.startsWith(prefix);
+}
+
 // The current streak: how many days in a row (ending today, or yesterday so it
 // doesn't reset the moment midnight passes) have at least one logged session.
 export function computeStreak(dateKeys: string[]): number {

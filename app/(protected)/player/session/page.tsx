@@ -3,43 +3,53 @@
 //
 // "Today's Session" — the position-aware, drill-based logging journey.
 //
-// Screens:
-//   1. type   — pick the session type (match / team / solo / gym / …)
-//   2. input  — type-specific: (team/solo) tap drill chips + reflection + effort
-//               & mood; others just reflection + effort & mood
-//   3. rate   — (match/team/solo only) the AI proposes ratings for your role's
-//               attributes; you tweak them, then save.
+// The type picker is a full page of image cards. Tapping a card opens a STEPPED
+// MODAL that collects the log in pages (drills → reflection → effort & mood →,
+// for football sessions, the AI ratings), then saves and shows the coach's
+// instant feedback. All the original logic is intact — it's just presented as a
+// wizard now.
 //
 // One session per day: if today's already logged, we show a "done" screen.
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
+import { motion } from "framer-motion";
 import { supabase } from "@/src/lib/supabase";
-import type { Player, Position, SessionType, SessionMetrics } from "@/src/types";
+import type { SessionType, SessionMetrics, Player } from "@/src/types";
 import { ROLE_ATTRIBUTES, roleLabel } from "@/src/lib/positions";
-import { SESSION_TYPES } from "@/src/lib/sessionTypes";
-import { suggestDrills, drillLabel } from "@/src/lib/drills";
-import { todayKey } from "@/src/lib/dates";
+import { SESSION_TYPES, SESSION_TYPE_IMAGE } from "@/src/lib/sessionTypes";
+import { suggestDrillsByCategory, isCustomDrill, drillLabel } from "@/src/lib/drills";
+import { todayKey, computeStreak } from "@/src/lib/dates";
 
 // Which session types produce role-attribute ratings (the football ones).
 const RATED_TYPES: SessionType[] = ["match", "team", "solo"];
 
-// In development we allow multiple logs per day so it's easy to test. In a
-// production build this is false, so the once-per-day rule still applies.
+// In development we allow multiple logs per day so it's easy to test.
 const DEV = process.env.NODE_ENV !== "production";
 
-type Screen = "type" | "input" | "rate" | "feedback";
+// Shared dark input styling.
+const INPUT_DARK =
+  "w-full rounded-lg border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-white " +
+  "placeholder-white/30 outline-none transition focus:border-green-500/60";
+
+// The wizard's pages, in order (some are skipped depending on the session type).
+type StepKey = "activities" | "reflection" | "effortMood" | "rate";
 
 export default function TodaySessionPage() {
   const router = useRouter();
 
   const [player, setPlayer] = useState<Player | null>(null);
   const [alreadyLogged, setAlreadyLogged] = useState(false);
+  const [streak, setStreak] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const [screen, setScreen] = useState<Screen>("type");
+  // The modal is open exactly when a session type is picked.
   const [sessionType, setSessionType] = useState<SessionType | null>(null);
+  const [stepIndex, setStepIndex] = useState(0);
+  const [showFeedback, setShowFeedback] = useState(false);
+
   const [drills, setDrills] = useState<string[]>([]);
   const [customDrill, setCustomDrill] = useState("");
   const [reflection, setReflection] = useState("");
@@ -48,7 +58,6 @@ export default function TodaySessionPage() {
 
   // Attribute ratings gathered from the AI (across the reflection + follow-ups).
   const [ratings, setRatings] = useState<SessionMetrics>({});
-  // The player's answers to follow-up questions for attributes not yet rated.
   const [followups, setFollowups] = useState<Record<string, string>>({});
 
   const [busy, setBusy] = useState(false);
@@ -63,20 +72,16 @@ export default function TodaySessionPage() {
       const { data: mine } = await supabase.from("players").select("*").limit(1).maybeSingle();
       setPlayer((mine as Player) ?? null);
       if (mine) {
-        const { data: todays } = await supabase
-          .from("sessions")
-          .select("id")
-          .eq("date", todayKey())
-          .limit(1);
-        setAlreadyLogged((todays?.length ?? 0) > 0);
+        const { data: rows } = await supabase.from("sessions").select("date");
+        const dates = (rows ?? []).map((r) => r.date as string);
+        setAlreadyLogged(dates.includes(todayKey()));
+        setStreak(computeStreak(dates));
       }
       setLoading(false);
     }
     load();
   }, []);
 
-  // Session types that offer a tap-list of activities: drills (team/solo) or
-  // exercises (gym/fitness).
   const showActivities =
     sessionType === "team" ||
     sessionType === "solo" ||
@@ -85,7 +90,28 @@ export default function TodaySessionPage() {
   const activityNoun =
     sessionType === "gym" || sessionType === "fitness" ? "exercises" : "drills";
   const isRated = sessionType !== null && RATED_TYPES.includes(sessionType);
-  const inputComplete = reflection.trim() !== "" && effort !== null && mood !== null;
+
+  // Open the modal fresh for a chosen type.
+  function pickType(t: SessionType) {
+    setSessionType(t);
+    setStepIndex(0);
+    setShowFeedback(false);
+    setDrills([]);
+    setCustomDrill("");
+    setReflection("");
+    setEffort(null);
+    setMood(null);
+    setRatings({});
+    setFollowups({});
+    setError(null);
+  }
+
+  function closeModal() {
+    setSessionType(null);
+    setStepIndex(0);
+    setShowFeedback(false);
+    setError(null);
+  }
 
   function toggleDrill(id: string) {
     setDrills((prev) => (prev.includes(id) ? prev.filter((d) => d !== id) : [...prev, id]));
@@ -97,18 +123,12 @@ export default function TodaySessionPage() {
     setCustomDrill("");
   }
 
-  // From the input screen: rated types → ask the AI, then go to "rate".
-  // Non-rated types → save straight away.
-  async function handleContinue() {
-    if (!player || !sessionType || effort === null || mood === null) return;
+  // Ask the AI to rate the role's attributes from the reflection, then advance
+  // to the "rate" step. (Rated types only.)
+  async function runParse() {
+    if (!player || !sessionType) return;
     setBusy(true);
     setError(null);
-
-    if (!isRated) {
-      await saveSession({}); // no attribute ratings for gym/fitness/recovery
-      return;
-    }
-
     try {
       const res = await fetch("/api/parse-session", {
         method: "POST",
@@ -118,11 +138,10 @@ export default function TodaySessionPage() {
       const data = await res.json();
       if (!res.ok) {
         setError(data.error ?? "Something went wrong.");
-        setBusy(false);
         return;
       }
       setRatings((data.metrics as SessionMetrics) ?? {});
-      setScreen("rate");
+      setStepIndex((i) => i + 1);
     } catch {
       setError("Could not reach the server.");
     } finally {
@@ -150,9 +169,7 @@ export default function TodaySessionPage() {
       setError(error.message);
       return;
     }
-    // Saved — show the coach's instant feedback (instead of jumping to the
-    // dashboard). The player taps "Back to dashboard" when they've read it.
-    setScreen("feedback");
+    setShowFeedback(true);
     fetchFeedback(metrics);
   }
 
@@ -189,8 +206,7 @@ export default function TodaySessionPage() {
   }
 
   // For attributes the AI couldn't rate from the reflection, the player answers
-  // a short follow-up question each; we send those answers back to the AI to
-  // rate them, then save. (No manual sliders — the AI always does the rating.)
+  // a short follow-up each; we send those back to the AI, then save.
   async function handleFollowupsAndSave() {
     if (!player) return;
     setBusy(true);
@@ -198,9 +214,7 @@ export default function TodaySessionPage() {
 
     const attrs = ROLE_ATTRIBUTES[player.position];
     const unrated = attrs.filter((a) => ratings[a.key] === undefined);
-    const note = unrated
-      .map((a) => `${a.label}: ${(followups[a.key] ?? "").trim()}`)
-      .join(". ");
+    const note = unrated.map((a) => `${a.label}: ${(followups[a.key] ?? "").trim()}`).join(". ");
 
     try {
       const res = await fetch("/api/parse-session", {
@@ -214,22 +228,20 @@ export default function TodaySessionPage() {
         setBusy(false);
         return;
       }
-      // Merge the newly-rated attributes and save.
-      const merged = { ...ratings, ...(data.metrics as SessionMetrics) };
-      await saveSession(merged);
+      await saveSession({ ...ratings, ...(data.metrics as SessionMetrics) });
     } catch {
       setError("Could not reach the server.");
       setBusy(false);
     }
   }
 
-  if (loading) return <div className="p-8 text-zinc-500">Loading…</div>;
+  if (loading) return <div className="p-8 text-white/50">Loading…</div>;
 
   if (!player) {
     return (
       <div className="p-8">
-        <p className="text-zinc-600 dark:text-zinc-400">Set up your profile first.</p>
-        <Link href="/player/setup" className="mt-2 inline-block text-sm font-medium text-emerald-600 hover:underline">
+        <p className="text-white/60">Set up your profile first.</p>
+        <Link href="/player/setup" className="mt-2 inline-block text-sm font-medium text-teal-400 hover:underline">
           Set up profile →
         </Link>
       </div>
@@ -240,263 +252,419 @@ export default function TodaySessionPage() {
     return (
       <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center p-6 text-center">
         <div className="text-4xl">✅</div>
-        <h1 className="mt-3 text-2xl font-bold text-zinc-900 dark:text-zinc-50">You&apos;ve logged today</h1>
-        <p className="mt-1 text-zinc-500">Nice work — come back tomorrow to keep your streak going.</p>
-        <Link href="/player" className="mt-4 rounded-lg bg-emerald-600 px-5 py-2 text-sm font-medium text-white hover:bg-emerald-700">
+        <h1 className="mt-3 text-2xl font-bold text-white">You&apos;ve logged today</h1>
+        <p className="mt-1 text-white/50">Nice work — come back tomorrow to keep your streak going.</p>
+        <Link href="/player" className="mt-4 rounded-lg bg-green-600 px-5 py-2 text-sm font-semibold text-black hover:bg-green-500">
           Back to dashboard
         </Link>
       </div>
     );
   }
 
+  // ── Wizard bookkeeping (only meaningful while the modal is open) ────────
   const attributes = ROLE_ATTRIBUTES[player.position];
   const ratedAttrs = attributes.filter((a) => ratings[a.key] !== undefined);
   const unratedAttrs = attributes.filter((a) => ratings[a.key] === undefined);
-  const allFollowupsAnswered = unratedAttrs.every(
-    (a) => (followups[a.key] ?? "").trim() !== ""
-  );
+  const allFollowupsAnswered = unratedAttrs.every((a) => (followups[a.key] ?? "").trim() !== "");
+
+  const steps: StepKey[] = [
+    ...(showActivities ? (["activities"] as StepKey[]) : []),
+    "reflection",
+    "effortMood",
+    ...(isRated ? (["rate"] as StepKey[]) : []),
+  ];
+  const currentKey = steps[stepIndex] ?? "reflection";
+
+  const stepTitle =
+    currentKey === "activities"
+      ? `Which ${activityNoun} did you do?`
+      : currentKey === "reflection"
+      ? "How did it go?"
+      : currentKey === "effortMood"
+      ? "Effort & mood"
+      : `Your ${roleLabel(player.position)} ratings`;
+
+  let canProceed = true;
+  if (currentKey === "reflection") canProceed = reflection.trim() !== "";
+  else if (currentKey === "effortMood") canProceed = effort !== null && mood !== null;
+  else if (currentKey === "rate") canProceed = unratedAttrs.length === 0 || allFollowupsAnswered;
+
+  let nextLabel = "Next Step ›";
+  if (currentKey === "effortMood") nextLabel = isRated ? "Analyse ›" : "Save session";
+  else if (currentKey === "rate") nextLabel = unratedAttrs.length > 0 ? "Rate & save" : "Save session";
+  if (busy) nextLabel = "Working…";
+
+  function handleBack() {
+    if (stepIndex === 0) closeModal();
+    else setStepIndex((i) => i - 1);
+  }
+
+  async function handleNext() {
+    if (currentKey === "activities" || currentKey === "reflection") {
+      setStepIndex((i) => i + 1);
+    } else if (currentKey === "effortMood") {
+      if (isRated) await runParse();
+      else await saveSession({});
+    } else if (currentKey === "rate") {
+      if (unratedAttrs.length > 0) await handleFollowupsAndSave();
+      else await saveSession(ratings);
+    }
+  }
 
   return (
-    <div className="mx-auto max-w-md p-6">
-      {/* ---------- Screen 1: pick a session type ---------- */}
-      {screen === "type" && (
-        <>
-          <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">What did you do today?</h1>
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            {SESSION_TYPES.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => {
-                  setSessionType(t.id);
-                  setScreen("input");
-                }}
-                className="rounded-2xl border border-zinc-200 p-4 text-left transition hover:border-emerald-500 dark:border-zinc-800"
-              >
-                <div className="text-2xl">{t.emoji}</div>
-                <div className="mt-1 font-medium text-zinc-900 dark:text-zinc-50">{t.label}</div>
-              </button>
-            ))}
+    <div className="mx-auto max-w-5xl px-8 py-12">
+      {/* ── Type picker (always the background) ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="flex items-start justify-between gap-4"
+      >
+        <div>
+          <h1 className="text-4xl font-bold text-white">What did you do?</h1>
+          <p className="mt-2 max-w-md text-sm text-white/50">
+            Select your activity type to log performance metrics, effort level, and recovery
+            status for today&apos;s session.
+          </p>
+        </div>
+        <div className="shrink-0 text-right">
+          <div className="text-[11px] font-semibold uppercase tracking-widest text-green-400">
+            Current streak
           </div>
-        </>
-      )}
+          <div className="text-sm font-semibold text-white/80">
+            {streak} {streak === 1 ? "day" : "days"}
+          </div>
+        </div>
+      </motion.div>
 
-      {/* ---------- Screen 2: type-specific input ---------- */}
-      {screen === "input" && sessionType && (
-        <>
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.15, ease: "easeOut" }}
+        className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+      >
+        {SESSION_TYPES.map((t) => (
           <button
-            onClick={() => {
-              setScreen("type");
-              setSessionType(null);
-              setDrills([]);
-            }}
-            className="text-sm text-zinc-500 hover:underline"
+            key={t.id}
+            onClick={() => pickType(t.id)}
+            className="group relative h-52 overflow-hidden rounded-2xl border border-white/10 text-left transition hover:border-green-500/50"
           >
-            ← Change type
-          </button>
-
-          {/* Drills (team/solo) or exercises (gym/fitness) */}
-          {showActivities && (
-            <section className="mt-4">
-              <h2 className="font-semibold text-zinc-900 dark:text-zinc-50">
-                Which {activityNoun} did you do?
-              </h2>
-              <p className="text-sm text-zinc-500">
-                Tap the ones you did
-                {sessionType === "team" || sessionType === "solo"
-                  ? " — suggested for your role first."
-                  : "."}
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {suggestDrills(sessionType as "team" | "solo" | "gym" | "fitness", player.position).map((d) => (
-                  <Chip key={d.id} active={drills.includes(d.id)} onClick={() => toggleDrill(d.id)}>
-                    {d.label}
-                  </Chip>
-                ))}
-                {/* Custom ones already added */}
-                {drills
-                  .filter(
-                    (id) =>
-                      !suggestDrills(sessionType as "team" | "solo" | "gym" | "fitness", player.position).some(
-                        (d) => d.id === id
-                      )
-                  )
-                  .map((id) => (
-                    <Chip key={id} active onClick={() => toggleDrill(id)}>
-                      {drillLabel(id)}
-                    </Chip>
-                  ))}
-              </div>
-              {/* Add your own */}
-              <div className="mt-2 flex gap-2">
-                <input
-                  value={customDrill}
-                  onChange={(e) => setCustomDrill(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      addCustomDrill();
-                    }
-                  }}
-                  placeholder={`+ add your own ${activityNoun === "exercises" ? "exercise" : "drill"}`}
-                  className="flex-1 rounded-lg border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-emerald-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-                />
-                <button
-                  type="button"
-                  onClick={addCustomDrill}
-                  className="rounded-lg border border-zinc-300 px-3 text-sm text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
-                >
-                  Add
-                </button>
-              </div>
-            </section>
-          )}
-
-          {/* Reflection */}
-          <section className="mt-6">
-            <h2 className="font-semibold text-zinc-900 dark:text-zinc-50">How did it go?</h2>
-            <p className="text-sm text-zinc-500">A line or two in your own words — the AI turns it into your ratings.</p>
-            <textarea
-              value={reflection}
-              onChange={(e) => setReflection(e.target.value)}
-              rows={4}
-              placeholder={reflectionPlaceholder(sessionType)}
-              className="mt-2 w-full resize-none rounded-xl border border-zinc-300 px-3 py-2 text-sm text-zinc-900 outline-none focus:border-emerald-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+            <Image
+              src={SESSION_TYPE_IMAGE[t.id]}
+              alt={t.label}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="object-cover transition duration-300 group-hover:scale-105"
             />
-          </section>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/10" />
+            <span className="absolute bottom-5 left-6 text-2xl font-bold text-white drop-shadow">
+              {t.label}
+            </span>
+          </button>
+        ))}
+      </motion.div>
 
-          {/* Effort + mood */}
-          <section className="mt-6 space-y-4">
-            <div>
-              <span className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                Effort <span className="text-zinc-400">(1 easy → 10 maximal)</span>
-              </span>
-              <RatingPicker value={effort} onChange={setEffort} activeColor="bg-amber-500" />
-            </div>
-            <div>
-              <span className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                Mood <span className="text-zinc-400">(1 low → 10 great)</span>
-              </span>
-              <RatingPicker value={mood} onChange={setMood} activeColor="bg-emerald-600" />
-            </div>
-          </section>
-
-          <button
-            onClick={handleContinue}
-            disabled={!inputComplete || busy}
-            className="mt-6 w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+      {/* ── The logging modal ── */}
+      {sessionType && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="flex h-[600px] max-h-[calc(100vh-2rem)] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0c0c0e] shadow-2xl"
           >
-            {busy ? "Working…" : isRated ? "Analyse my session →" : "Save session"}
-          </button>
-          {error && <p className="mt-2 text-center text-sm text-red-600">Error: {error}</p>}
-        </>
-      )}
+            {showFeedback ? (
+              /* ---- Coach's instant feedback ---- */
+              <div className="flex h-full flex-col p-8">
+                <div className="flex flex-col items-center justify-center pb-6 pt-4 text-center">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-green-500 text-black shadow-[0_0_20px_rgba(34,197,94,0.3)]">
+                    <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <h2 className="mt-6 text-lg font-black uppercase tracking-widest text-white">Session Logged!</h2>
+                </div>
 
-      {/* ---------- Screen 3: AI ratings + follow-up questions ---------- */}
-      {screen === "rate" && (
-        <>
-          <button onClick={() => setScreen("input")} className="text-sm text-zinc-500 hover:underline">
-            ← Back
-          </button>
-          <h1 className="mt-3 text-xl font-bold text-zinc-900 dark:text-zinc-50">
-            Your {roleLabel(player.position)} ratings
-          </h1>
+                <div className="flex-1 overflow-y-auto">
+                  {feedbackLoading ? (
+                    <div className="flex h-full items-center justify-center">
+                      <p className="text-sm text-white/50">Your coach is looking at it…</p>
+                    </div>
+                  ) : feedback && (feedback.reaction || feedback.tip) ? (
+                    <div className="space-y-6">
+                      {feedback.reaction && (
+                        <div className="flex gap-4 px-2">
+                          <div className="text-xl">🏆</div>
+                          <p className="text-sm leading-relaxed text-white/85">{feedback.reaction}</p>
+                        </div>
+                      )}
 
-          {/* What the AI could rate straight from your reflection */}
-          {ratedAttrs.length > 0 && (
-            <div className="mt-4">
-              <p className="text-sm text-zinc-500">From your reflection:</p>
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {ratedAttrs.map((a) => (
-                  <span
-                    key={a.key}
-                    className="rounded-full bg-emerald-100 px-3 py-1 text-sm font-medium text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200"
+                      {feedback.tip && (
+                        <div className="flex gap-4 border-l-2 border-green-500 bg-white/[0.03] p-4">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-green-500 text-black">
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                            </svg>
+                          </div>
+                          <div>
+                            <h4 className="text-xs font-bold uppercase tracking-widest text-green-500">
+                              Pro Tip
+                            </h4>
+                            <p className="mt-1 text-sm italic leading-relaxed text-white/70">
+                              &quot;{feedback.tip}&quot;
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex justify-around pb-4 pt-4">
+                        <div className="text-center">
+                          <div className="text-[10px] font-bold uppercase tracking-widest text-white/50">Mood</div>
+                          <div className="mt-2 font-bold">
+                            <span className="text-2xl text-amber-500">{mood}</span>
+                            <span className="text-sm text-white/40"> /10</span>
+                          </div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-[10px] font-bold uppercase tracking-widest text-white/50">Intensity Score</div>
+                          <div className="mt-2 font-bold">
+                            <span className="text-2xl text-amber-500">{effort}</span>
+                            <span className="text-sm text-white/40"> /10</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex h-full flex-col items-center justify-center">
+                      <p className="text-sm text-white/50">Nice work — keep it up!</p>
+                      <div className="mt-8 flex w-full justify-around">
+                        <div className="text-center">
+                          <div className="text-[10px] font-bold uppercase tracking-widest text-white/50">Mood</div>
+                          <div className="mt-2 font-bold">
+                            <span className="text-2xl text-amber-500">{mood}</span>
+                            <span className="text-sm text-white/40"> /10</span>
+                          </div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-[10px] font-bold uppercase tracking-widest text-white/50">Intensity Score</div>
+                          <div className="mt-2 font-bold">
+                            <span className="text-2xl text-amber-500">{effort}</span>
+                            <span className="text-sm text-white/40"> /10</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="shrink-0 pt-4">
+                  <button
+                    onClick={() => router.push("/player")}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-green-500 px-4 py-3.5 text-sm font-bold text-black transition hover:bg-green-400"
                   >
-                    {a.label} {ratings[a.key]}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {unratedAttrs.length > 0 ? (
-            // Ask a quick follow-up for anything the reflection didn't cover.
-            <div className="mt-6">
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                A couple of quick questions so I can rate the rest:
-              </p>
-              <div className="mt-3 space-y-3">
-                {unratedAttrs.map((a) => (
-                  <label key={a.key} className="block">
-                    <span className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                      How was your {a.label.toLowerCase()} today?
-                    </span>
-                    <input
-                      value={followups[a.key] ?? ""}
-                      onChange={(e) =>
-                        setFollowups((prev) => ({ ...prev, [a.key]: e.target.value }))
-                      }
-                      placeholder="a few words…"
-                      className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-emerald-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-                    />
-                  </label>
-                ))}
-              </div>
-
-              <button
-                onClick={handleFollowupsAndSave}
-                disabled={busy || !allFollowupsAnswered}
-                className="mt-4 w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
-              >
-                {busy ? "Rating…" : "Rate these & save"}
-              </button>
-            </div>
-          ) : (
-            // Everything got rated from the reflection — just save.
-            <button
-              onClick={() => saveSession(ratings)}
-              disabled={busy}
-              className="mt-6 w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
-            >
-              {busy ? "Saving…" : "Save session"}
-            </button>
-          )}
-          {error && <p className="mt-2 text-center text-sm text-red-600">Error: {error}</p>}
-        </>
-      )}
-
-      {/* ---------- Feedback: the coach's instant reaction ---------- */}
-      {screen === "feedback" && (
-        <div className="py-6 text-center">
-          <div className="text-4xl">✅</div>
-          <h1 className="mt-2 text-xl font-bold text-zinc-900 dark:text-zinc-50">
-            Session logged!
-          </h1>
-
-          {feedbackLoading ? (
-            <p className="mt-4 text-sm text-zinc-500">Your coach is looking at it…</p>
-          ) : feedback && (feedback.reaction || feedback.tip) ? (
-            <div className="mt-5 space-y-3 text-left">
-              {feedback.reaction && (
-                <div className="rounded-2xl bg-zinc-100 px-4 py-3 text-sm text-zinc-800 dark:bg-zinc-800 dark:text-zinc-100">
-                  {feedback.reaction}
+                    Back to dashboard
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                  </button>
                 </div>
-              )}
-              {feedback.tip && (
-                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-100">
-                  💡 {feedback.tip}
+              </div>
+            ) : (
+              <>
+                {/* Header: back + title, with the step progress on the right */}
+                <div className="shrink-0 px-6 pt-6">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={handleBack}
+                        className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-white/60 transition hover:bg-white/10 hover:text-white"
+                        aria-label="Back"
+                      >
+                        ←
+                      </button>
+                      <h2 className="text-xl font-bold text-white">{stepTitle}</h2>
+                    </div>
+                    <div className="shrink-0 whitespace-nowrap text-[10px] font-semibold uppercase tracking-widest text-white/40">
+                      Step {stepIndex + 1} of {steps.length}
+                    </div>
+                  </div>
                 </div>
-              )}
-            </div>
-          ) : (
-            <p className="mt-4 text-sm text-zinc-500">Nice work — keep it up!</p>
-          )}
 
-          <button
-            onClick={() => router.push("/player")}
-            className="mt-6 w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700"
-          >
-            Back to dashboard
-          </button>
+                <div className="mt-4 border-t border-white/10" />
+
+                {/* Body: the current step (scrolls if it's tall) */}
+                <div className="flex-1 overflow-y-auto px-6 py-5">
+                  {currentKey === "activities" && (
+                    <div>
+                      <p className="text-sm text-white/50">
+                        {sessionType === "team" || sessionType === "solo"
+                          ? "Tap the ones you did — suggested for your role first."
+                          : "Tap all that apply."}
+                      </p>
+
+                      {/* Drills grouped into a few broad categories */}
+                      {suggestDrillsByCategory(
+                        sessionType as "team" | "solo" | "gym" | "fitness",
+                        player.position
+                      ).map((cat) => (
+                        <div key={cat.category} className="mt-4">
+                          <p className="text-xs font-semibold uppercase tracking-widest text-green-400">
+                            {cat.category}
+                          </p>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {cat.drills.map((d) => (
+                              <Chip
+                                key={d.id}
+                                active={drills.includes(d.id)}
+                                onClick={() => toggleDrill(d.id)}
+                              >
+                                {d.label}
+                              </Chip>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* Player-added ("add your own") drills */}
+                      {drills.filter(isCustomDrill).length > 0 && (
+                        <div className="mt-4">
+                          <p className="text-xs font-semibold uppercase tracking-widest text-green-400">
+                            Your own
+                          </p>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {drills.filter(isCustomDrill).map((id) => (
+                              <Chip key={id} active onClick={() => toggleDrill(id)}>
+                                {drillLabel(id)}
+                              </Chip>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="mt-5 flex gap-2">
+                        <input
+                          value={customDrill}
+                          onChange={(e) => setCustomDrill(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              addCustomDrill();
+                            }
+                          }}
+                          placeholder={`+ add a custom ${activityNoun === "exercises" ? "exercise" : "drill"}`}
+                          className={INPUT_DARK}
+                        />
+                        <button
+                          type="button"
+                          onClick={addCustomDrill}
+                          className="shrink-0 rounded-lg border border-white/15 px-4 text-sm font-medium text-white/80 transition hover:bg-white/5"
+                        >
+                          Add
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {currentKey === "reflection" && (
+                    <div>
+                      <p className="text-sm text-white/50">
+                        A line or two in your own words — the AI turns it into your ratings.
+                      </p>
+                      <textarea
+                        value={reflection}
+                        onChange={(e) => setReflection(e.target.value)}
+                        rows={5}
+                        placeholder={reflectionPlaceholder(sessionType)}
+                        className={INPUT_DARK + " mt-3 resize-none"}
+                      />
+                    </div>
+                  )}
+
+                  {currentKey === "effortMood" && (
+                    <div className="space-y-5">
+                      <div>
+                        <span className="mb-2 block text-sm font-medium text-white/70">
+                          Effort <span className="text-white/40">(1 easy → 10 maximal)</span>
+                        </span>
+                        <RatingPicker value={effort} onChange={setEffort} activeColor="bg-amber-500" />
+                      </div>
+                      <div>
+                        <span className="mb-2 block text-sm font-medium text-white/70">
+                          Mood <span className="text-white/40">(1 low → 10 great)</span>
+                        </span>
+                        <RatingPicker value={mood} onChange={setMood} activeColor="bg-green-600" />
+                      </div>
+                    </div>
+                  )}
+
+                  {currentKey === "rate" && (
+                    <div>
+                      {ratedAttrs.length > 0 && (
+                        <>
+                          <p className="text-xs font-semibold uppercase tracking-widest text-green-400">
+                            From your session
+                          </p>
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {ratedAttrs.map((a) => (
+                              <span
+                                key={a.key}
+                                className="rounded-full border border-green-500/30 bg-green-500/10 px-3 py-1 text-sm font-medium text-green-300"
+                              >
+                                {a.label} {ratings[a.key]}
+                              </span>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                      {unratedAttrs.length > 0 && (
+                        <div className="mt-5">
+                          <p className="text-sm text-white/60">
+                            A couple of quick questions so I can rate the rest:
+                          </p>
+                          <div className="mt-3 space-y-3">
+                            {unratedAttrs.map((a) => (
+                              <label key={a.key} className="block">
+                                <span className="mb-1 block text-sm font-medium text-white/70">
+                                  How was your {a.label.toLowerCase()} today?
+                                </span>
+                                <input
+                                  value={followups[a.key] ?? ""}
+                                  onChange={(e) =>
+                                    setFollowups((prev) => ({ ...prev, [a.key]: e.target.value }))
+                                  }
+                                  placeholder="a few words…"
+                                  className={INPUT_DARK}
+                                />
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {error && <p className="mt-4 text-sm text-red-400">Error: {error}</p>}
+                </div>
+
+                {/* Footer: cancel + next */}
+                <div className="flex shrink-0 items-center justify-between border-t border-white/10 px-6 py-4">
+                  <button
+                    onClick={closeModal}
+                    className="text-sm font-medium text-white/50 transition hover:text-white"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleNext}
+                    disabled={!canProceed || busy}
+                    className="rounded-xl bg-green-500 px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-green-400 disabled:opacity-40"
+                  >
+                    {nextLabel}
+                  </button>
+                </div>
+              </>
+            )}
+          </motion.div>
         </div>
       )}
     </div>
@@ -521,7 +689,7 @@ function reflectionPlaceholder(type: SessionType): string {
   }
 }
 
-// A tappable chip (for drills).
+// A tappable chip (dark; green when selected, with a check).
 function Chip({
   active,
   onClick,
@@ -536,18 +704,19 @@ function Chip({
       type="button"
       onClick={onClick}
       className={
-        "rounded-full border px-3 py-1.5 text-sm transition " +
+        "inline-flex items-center rounded-full border px-3 py-1.5 text-sm transition " +
         (active
-          ? "border-emerald-600 bg-emerald-600 text-white"
-          : "border-zinc-300 text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900")
+          ? "border-green-500 bg-green-500/10 text-green-300"
+          : "border-white/15 text-white/70 hover:border-white/30 hover:text-white")
       }
     >
+      {active && <span className="mr-1.5 text-green-400">✓</span>}
       {children}
     </button>
   );
 }
 
-// A row of 1–10 buttons.
+// A row of 1–10 buttons (dark).
 function RatingPicker({
   value,
   onChange,
@@ -558,7 +727,7 @@ function RatingPicker({
   activeColor: string;
 }) {
   return (
-    <div className="flex flex-wrap gap-1">
+    <div className="flex flex-wrap gap-1.5">
       {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => {
         const active = value === n;
         return (
@@ -567,10 +736,10 @@ function RatingPicker({
             key={n}
             onClick={() => onChange(n)}
             className={
-              "h-8 w-8 rounded-lg text-sm font-medium transition " +
+              "h-9 w-9 rounded-lg text-sm font-medium transition " +
               (active
                 ? activeColor + " text-white"
-                : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700")
+                : "bg-white/5 text-white/60 hover:bg-white/10")
             }
           >
             {n}

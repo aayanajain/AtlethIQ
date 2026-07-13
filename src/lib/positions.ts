@@ -93,3 +93,11 @@ export const ROLE_ATTRIBUTES: Record<Position, Attribute[]> = {
 export function roleLabel(slug: Position): string {
   return ROLES.find((r) => r.slug === slug)?.label ?? slug;
 }
+
+// The role's "signature" attributes: the 3 most defining for the position.
+// Each ROLE_ATTRIBUTES list is authored in priority order, so the first three
+// are the ones that most define that role. The dashboard uses these for both
+// the hero cards and the "last 5 sessions" form graph, so they tell one story.
+export function signatureAttributes(slug: Position): Attribute[] {
+  return ROLE_ATTRIBUTES[slug].slice(0, 3);
+}
