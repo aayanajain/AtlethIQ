@@ -123,6 +123,9 @@ export async function POST(request: Request) {
           ? ctx.games
           : "",
     };
+    // An optional free-text note from the player asking to tailor the plan to
+    // something specific (e.g. "I keep getting nutmegged"). Trimmed + capped.
+    const message = typeof ctx.message === "string" ? ctx.message.trim().slice(0, 400) : "";
 
     const supabase = await createServerSupabase();
     const {
@@ -179,6 +182,7 @@ Their focus: ${player.currentFocus || "not set"}. Their goal: ${player.goal || "
 
 THIS PLAN'S PURPOSE:
 ${horizonGuidance(horizon, context)}
+${message ? `\nThe player specifically asked you to tailor this plan to: "${message}". Weave this into the nextFocus and drillPlan where it fits (stay age-appropriate and football-specific).` : ""}
 
 Assess these attributes (use these EXACT labels for "skill"):
 ${attrLabels.map((l) => "- " + l).join("\n")}
