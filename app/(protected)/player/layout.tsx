@@ -1,12 +1,9 @@
 "use client";
 // app/(protected)/player/layout.tsx
 //
-// The PLAYER-side shell. Because it's a layout inside app/(protected)/player/,
-// it automatically wraps EVERY player page (/player, /player/mentor, etc.) with
-// this sidebar — we don't add the sidebar to each page by hand.
-//
-// It's a client component ("use client") because it uses usePathname() to know
-// which nav link is currently active and highlight it.
+// The PLAYER-side shell — sidebar + content, in the dark/teal design system.
+// It wraps every player page. Client component so it can highlight the active
+// link (usePathname) and sign the user out.
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -25,25 +22,24 @@ export default function PlayerLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname(); // the current URL path, e.g. "/player"
+  const pathname = usePathname();
   const router = useRouter();
 
-  // Real sign-out: clear the session, then go back to the public home.
   async function handleLogout() {
     await supabase.auth.signOut();
     router.push("/");
   }
 
   return (
-    <div className="flex min-h-screen">
-      {/* --- Sidebar --- */}
-      <aside className="flex w-52 shrink-0 flex-col border-r border-zinc-200 p-4 dark:border-zinc-800">
+    <div className="flex min-h-screen bg-[#050505] text-white">
+      {/* ── Sidebar ── */}
+      <aside className="flex w-52 shrink-0 flex-col border-r border-white/[0.08] p-4">
         {/* Brand + role */}
         <div>
-          <div className="text-lg font-bold text-zinc-900 dark:text-zinc-50">
-            AthletIQ
+          <div className="text-lg font-bold text-white">AthletIQ</div>
+          <div className="text-xs font-semibold uppercase tracking-widest text-teal-400">
+            Player
           </div>
-          <div className="text-xs font-medium text-emerald-600">Player</div>
         </div>
 
         {/* Nav links */}
@@ -57,15 +53,14 @@ export default function PlayerLayout({
                 className={
                   "flex items-center justify-between rounded-lg px-3 py-2 text-sm transition " +
                   (active
-                    ? "bg-emerald-50 font-medium text-emerald-700 dark:bg-emerald-950 dark:text-emerald-200"
-                    : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900")
+                    ? "bg-teal-500/10 font-medium text-teal-300"
+                    : "text-white/60 hover:bg-white/5 hover:text-white")
                 }
               >
                 <span>
                   <span className="mr-2">{item.icon}</span>
                   {item.label}
                 </span>
-                {/* Amber dot = "under development" (only on unfinished pages) */}
                 {item.underDev && (
                   <span
                     title="Under development"
@@ -77,16 +72,16 @@ export default function PlayerLayout({
           })}
         </nav>
 
-        {/* Log out at the bottom */}
+        {/* Log out */}
         <button
           onClick={handleLogout}
-          className="rounded-lg px-3 py-2 text-left text-sm text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-900"
+          className="rounded-lg px-3 py-2 text-left text-sm text-white/40 transition hover:bg-white/5 hover:text-white"
         >
           ← Log out
         </button>
       </aside>
 
-      {/* --- Page content --- */}
+      {/* ── Page content ── */}
       <div className="flex-1">{children}</div>
     </div>
   );

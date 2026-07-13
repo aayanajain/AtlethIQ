@@ -22,3 +22,19 @@ export const SESSION_TYPES: {
 export function sessionTypeLabel(id: SessionType): string {
   return SESSION_TYPES.find((t) => t.id === id)?.label ?? id;
 }
+
+export function sessionTypeEmoji(id: SessionType): string {
+  return SESSION_TYPES.find((t) => t.id === id)?.emoji ?? "⚽";
+}
+
+// The /public image that backs each session type's card. Chosen to fit each
+// activity (football pitch for a match, runner for fitness, etc.). Shared by the
+// session picker and the dashboard's "last session" card.
+export const SESSION_TYPE_IMAGE: Record<SessionType, string> = {
+  match: "/card2.png", // football on a floodlit pitch
+  team: "/team.png", 
+  solo: "/solo.png", 
+  gym: "/gym.png", 
+  fitness: "/card3.png", // runner on a track
+  recovery: "/relax.png", 
+};
