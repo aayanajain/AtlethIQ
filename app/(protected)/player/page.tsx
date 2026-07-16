@@ -105,7 +105,7 @@ export default function PlayerDashboardPage() {
       <div className="p-8">
         <p className="text-white/60">No player profile yet.</p>
         <Link
-          href="/player/setup"
+          href="/player/getting-started"
           className="mt-2 inline-block text-sm font-medium text-teal-400 hover:underline"
         >
           Set up profile →
@@ -147,11 +147,11 @@ export default function PlayerDashboardPage() {
             🔥 {streak}
           </div>
           <Link
-            href="/player/setup"
+            href="/player/profile"
             title="Your profile"
             className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[0.06] text-sm font-semibold text-teal-300 transition hover:border-teal-500/40"
           >
-            {initials(player.name)}
+            {initials(player.fullName)}
           </Link>
         </div>
 
@@ -161,7 +161,7 @@ export default function PlayerDashboardPage() {
             {/* Greeting + CTA */}
             <div>
               <h1 className="text-2xl font-bold text-white">
-                Hi, {player.name.split(" ")[0]} 👋
+                Hi, {player.fullName.split(" ")[0]} 👋
               </h1>
               {player.currentFocus && (
                 <p className="mt-2 text-sm text-white/60">
@@ -405,7 +405,8 @@ function attrTrend(sessionsNewestFirst: Session[], key: string): Trend | null {
 }
 
 // Initials for the profile avatar, e.g. "Kush Sharma" → "KS".
-function initials(name: string): string {
+function initials(name: string | undefined | null): string {
+  if (!name) return "?";
   return name
     .split(" ")
     .filter(Boolean)

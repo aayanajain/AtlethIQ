@@ -13,6 +13,7 @@ import { useParams } from "next/navigation";
 import { supabase } from "@/src/lib/supabase";
 import type { Player } from "@/src/types";
 import { Card, Badge, SectionTitle } from "@/src/components/ui";
+import { calculateAge } from "@/src/lib/onboarding";
 
 export default function CoachPlayerDetailPage() {
   // useParams() reads the dynamic parts of the URL. The key "playerId" matches
@@ -64,10 +65,12 @@ export default function CoachPlayerDetailPage() {
       {/* Player header */}
       <div className="mt-4 flex items-center gap-3">
         <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-          {player.name}
+          {player.fullName}
         </h1>
         <Badge color="indigo">{player.position}</Badge>
-        <span className="text-sm text-zinc-500">age {player.age}</span>
+        <span className="text-sm text-zinc-500">
+          age {player.dateOfBirth ? calculateAge(player.dateOfBirth) : "?"}
+        </span>
       </div>
       {player.currentFocus && (
         <p className="mt-1 text-sm text-zinc-500">

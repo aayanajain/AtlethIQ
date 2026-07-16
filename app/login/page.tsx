@@ -8,6 +8,10 @@ import { supabase } from "@/src/lib/supabase";
 
 type Role = "player" | "coach";
 
+// ─── DEV MODE TOGGLE ───────────────────────────────────────────────────
+const DEV_MODE = true; // Set to false in production
+// ───────────────────────────────────────────────────────────────────────
+
 export default function LoginPage() {
   const router = useRouter();
   const [role, setRole] = useState<Role>("player");
@@ -30,6 +34,12 @@ export default function LoginPage() {
     if (signInError) {
       setError(signInError.message);
       setBusy(false);
+      return;
+    }
+
+    // DEV MODE: Always redirect to getting-started for testing
+    if (DEV_MODE) {
+      router.push("/player/getting-started");
       return;
     }
 
@@ -77,15 +87,17 @@ export default function LoginPage() {
       <div className="relative hidden lg:flex flex-col w-1/2">
         {/* Logo */}
         <div className="absolute z-10 top-8 left-8">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
-              <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5">
-                <circle cx="12" cy="12" r="10" stroke="#0a0f14" strokeWidth="2" />
-                <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" stroke="#0a0f14" strokeWidth="2" />
-              </svg>
-            </div>
-            <span className="text-xl font-bold text-white">AthleteIQ</span>
-          </div>
+          <Link href="/" className="block">
+            <Image
+              src="/logo.png?v=2"
+              alt="AthleteIQ"
+              width={160}
+              height={44}
+              style={{ height: "auto", width: "160px" }}
+              priority
+              unoptimized
+            />
+          </Link>
         </div>
 
         {/* Main Content */}
@@ -106,15 +118,17 @@ export default function LoginPage() {
       <div className="flex flex-col justify-center items-center w-full lg:w-1/2 min-h-screen px-6">
         {/* Mobile Logo */}
         <div className="lg:hidden absolute top-8 left-6">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
-              <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5">
-                <circle cx="12" cy="12" r="10" stroke="#0a0f14" strokeWidth="2" />
-                <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" stroke="#0a0f14" strokeWidth="2" />
-              </svg>
-            </div>
-            <span className="text-xl font-bold text-white">AthleteIQ</span>
-          </div>
+          <Link href="/" className="block">
+            <Image
+              src="/logo.png?v=2"
+              alt="AthleteIQ"
+              width={140}
+              height={38}
+              style={{ height: "auto", width: "140px" }}
+              priority
+              unoptimized
+            />
+          </Link>
         </div>
 
         {/* Login Card */}
