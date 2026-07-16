@@ -11,6 +11,7 @@ import Link from "next/link";
 import { supabase } from "@/src/lib/supabase";
 import type { Player } from "@/src/types";
 import { Card, Badge, SectionTitle } from "@/src/components/ui";
+import { calculateAge } from "@/src/lib/onboarding";
 
 export default function CoachDashboardPage() {
   const [players, setPlayers] = useState<Player[]>([]);
@@ -74,7 +75,7 @@ export default function CoachDashboardPage() {
           <Card className="mt-2 text-center">
             <p className="text-zinc-500">No players yet.</p>
             <Link
-              href="/player/setup"
+              href="/player/getting-started"
               className="mt-2 inline-block text-sm font-medium text-indigo-600 hover:underline"
             >
               Add a player →
@@ -91,9 +92,11 @@ export default function CoachDashboardPage() {
                 >
                   <div>
                     <div className="font-medium text-zinc-900 dark:text-zinc-50">
-                      {p.name}
+                      {p.fullName || p.name || "Unknown"}
                     </div>
-                    <div className="text-sm text-zinc-500">age {p.age}</div>
+                    <div className="text-sm text-zinc-500">
+                      age {p.dateOfBirth ? calculateAge(p.dateOfBirth) : p.age || "?"}
+                    </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge color="indigo">{p.position}</Badge>

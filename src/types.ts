@@ -30,6 +30,38 @@ export type Position =
   | "winger"
   | "striker";
 
+/**
+ * Gender options for player profile.
+ */
+export type Gender = "male" | "female" | "other" | "prefer-not-to-say";
+
+/**
+ * Dominant foot preference.
+ */
+export type DominantFoot = "left" | "right" | "both";
+
+/**
+ * Self-assessed fitness level.
+ */
+export type FitnessLevel = "beginner" | "intermediate" | "advanced";
+
+/**
+ * Preferred training time of day.
+ */
+export type PreferredTime = "morning" | "afternoon" | "evening";
+
+/**
+ * Days of the week for training availability.
+ */
+export type TrainingDay =
+  | "monday"
+  | "tuesday"
+  | "wednesday"
+  | "thursday"
+  | "friday"
+  | "saturday"
+  | "sunday";
+
 /** What kind of session it was — this drives which fields the log shows. */
 export type SessionType =
   | "match"
@@ -60,18 +92,65 @@ export type TrendDirection = "up" | "flat" | "down";
 /**
  * A young footballer using the app. Remember: users are minors (ages 10–18),
  * so all content built around a Player must stay age-appropriate.
+ * 
+ * Updated for comprehensive onboarding flow with personal, football, physical,
+ * goals, and availability information.
  */
 export interface Player {
   id: string;
-  name: string;
-  age: number;
+
+  // ── Personal Information ──
+  /** Full name of the player. */
+  fullName: string;
+  /** Date of birth in ISO format (YYYY-MM-DD). */
+  dateOfBirth: string;
+  /** Gender identity. */
+  gender: Gender;
+
+  // ── Football Details ──
+  /** The playing role/position. */
   position: Position;
+  /** Which foot they prefer to use. */
+  dominantFoot: DominantFoot;
+  /** How many years they've been playing football. */
+  yearsPlaying: number;
+  /** Current club or team name (optional). */
+  currentClub?: string;
+
+  // ── Physical Details ──
+  /** Height in centimeters (optional). */
+  height?: number;
+  /** Weight in kilograms (optional). */
+  weight?: number;
+  /** Self-assessed fitness level. */
+  fitnessLevel: FitnessLevel;
+
+  // ── Goals ──
+  /** 
+   * Array of development goals. Can include predefined goals like
+   * "Improve overall fitness" or custom goals set by the player.
+   */
+  goals: string[];
+
+  // ── Availability ──
+  /** Days of the week available for training. */
+  trainingDays: TrainingDay[];
+  /** Preferred time of day for training. */
+  preferredTime: PreferredTime;
+  /** Preferred session duration in minutes (e.g., 60, 90, 120). */
+  sessionDuration: number;
+
+  // ── Meta & Legacy Fields ──
   /** What the player is currently working on, e.g. "weak foot control". */
   currentFocus: string;
-  /** The player's own longer-term goal, in their words. */
-  goal: string;
   /** Preferred language (for multilingual support later). e.g. "en". */
   language: string;
+  /** Whether the player has completed the onboarding wizard. */
+  onboardingCompleted: boolean;
+  /** When the profile was created. */
+  createdAt?: string;
+  /** When the profile was last updated. */
+  updatedAt?: string;
 }
 
 // ---------------------------------------------------------------------------

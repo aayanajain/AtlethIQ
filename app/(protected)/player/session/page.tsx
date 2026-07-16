@@ -185,7 +185,7 @@ export default function TodaySessionPage() {
         body: JSON.stringify({
           position: player.position,
           focus: player.currentFocus,
-          goal: player.goal,
+          goal: player.goals?.[0] || "", // Use first goal from array
           sessionType,
           drills,
           note: reflection,
@@ -241,7 +241,7 @@ export default function TodaySessionPage() {
     return (
       <div className="p-8">
         <p className="text-white/60">Set up your profile first.</p>
-        <Link href="/player/setup" className="mt-2 inline-block text-sm font-medium text-teal-400 hover:underline">
+        <Link href="/player/getting-started" className="mt-2 inline-block text-sm font-medium text-teal-400 hover:underline">
           Set up profile →
         </Link>
       </div>
