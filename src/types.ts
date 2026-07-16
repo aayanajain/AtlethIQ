@@ -151,6 +151,17 @@ export interface Player {
   createdAt?: string;
   /** When the profile was last updated. */
   updatedAt?: string;
+
+  // ── Deprecated legacy columns ──
+  // Still present on existing DB rows (pre-onboarding-redesign). Kept optional
+  // so code that falls back to them (e.g. the coach roster) type-checks. Do NOT
+  // use these for new code — use fullName / dateOfBirth / goals instead.
+  /** @deprecated use `fullName`. */
+  name?: string;
+  /** @deprecated use `dateOfBirth`. */
+  age?: number;
+  /** @deprecated use `goals`. */
+  goal?: string;
 }
 
 // ---------------------------------------------------------------------------

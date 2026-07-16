@@ -48,7 +48,13 @@ export default function PlayerDashboardPage() {
 
   useEffect(() => {
     async function load() {
-      const { data: mine } = await supabase.from("players").select("*").limit(1).maybeSingle();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      const { data: mine } = user
+        ? await supabase.from("players").select("*").eq("id", user.id).maybeSingle()
+        : { data: null };
       const me = (mine as Player) ?? null;
       setPlayer(me);
 
@@ -161,7 +167,7 @@ export default function PlayerDashboardPage() {
             {/* Greeting + CTA */}
             <div>
               <h1 className="text-2xl font-bold text-white">
-                Hi, {player.fullName.split(" ")[0]} 👋
+                Hi, {player.fullName?.split(" ")[0] ?? "there"} 👋
               </h1>
               {player.currentFocus && (
                 <p className="mt-2 text-sm text-white/60">

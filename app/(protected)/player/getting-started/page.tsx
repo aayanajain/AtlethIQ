@@ -111,25 +111,63 @@ export default function GettingStartedPage() {
   // Check if user already completed onboarding (redirect if yes)
   // DEV MODE: Skip this check to always show getting-started page
   useEffect(() => {
-    async function checkOnboarding() {
-      // In dev mode, always allow access to getting-started
-      if (DEV_MODE) {
-        setLoading(false);
+    async function loadInitial() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        router.replace("/login");
         return;
       }
 
-      const { data: player } = await supabase
+      // The name the player gave at signup lives in their auth metadata — use it
+      // to prefill Full Name for brand-new players.
+      const signupName =
+        typeof user.user_metadata?.name === "string" ? user.user_metadata.name : "";
+
+      // Load any existing player row so returning users (and dev-mode re-runs)
+      // start from their saved answers rather than a blank form.
+      const { data: playerRow } = await supabase
         .from("players")
-        .select("onboardingCompleted")
+        .select("*")
+        .eq("id", user.id)
         .maybeSingle();
 
-      if (player?.onboardingCompleted) {
+      // In production, a completed profile shouldn't see the wizard again.
+      // (DEV_MODE keeps it open on purpose for testing.)
+      if (!DEV_MODE && playerRow?.onboardingCompleted) {
         router.replace("/player");
         return;
       }
+
+      if (playerRow) {
+        const p = playerRow as Player;
+        setData({
+          fullName: p.fullName || signupName || "",
+          dateOfBirth: p.dateOfBirth || "",
+          gender: p.gender || "",
+          position: p.position || "",
+          dominantFoot: p.dominantFoot || "",
+          yearsPlaying: p.yearsPlaying ?? 0,
+          currentClub: p.currentClub || "",
+          height: p.height != null ? String(p.height) : "",
+          weight: p.weight != null ? String(p.weight) : "",
+          fitnessLevel: p.fitnessLevel || "",
+          goals: p.goals || [],
+          customGoal: "",
+          trainingDays: p.trainingDays || [],
+          preferredTime: p.preferredTime || "",
+          sessionDuration: p.sessionDuration || 60,
+          customDuration: "",
+        });
+      } else if (signupName) {
+        // No profile yet — just seed the name from signup.
+        setData((prev) => ({ ...prev, fullName: signupName }));
+      }
+
       setLoading(false);
     }
-    checkOnboarding();
+    loadInitial();
   }, [router]);
 
   // Validate current step
@@ -220,9 +258,12 @@ export default function GettingStartedPage() {
         onboardingCompleted: true,
       };
 
+      // Upsert (not insert): the player row's id IS the auth user id, so a
+      // returning user — e.g. re-running the wizard while DEV_MODE is on —
+      // would otherwise hit a duplicate-primary-key error.
       const { error: insertError } = await supabase
         .from("players")
-        .insert(playerData);
+        .upsert(playerData);
 
       if (insertError) throw insertError;
 

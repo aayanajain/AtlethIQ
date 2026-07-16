@@ -26,7 +26,6 @@ const NAV = [
   { href: "/player/plan", label: "Plan", underDev: false },
   { href: "/player/journey", label: "Journey", underDev: false },
   { href: "/player/mentor", label: "AI Mentor", underDev: true },
-  { href: "/player/profile", label: "Profile", underDev: false },
 ];
 
 export default function PlayerLayout({
@@ -54,9 +53,19 @@ export default function PlayerLayout({
         return;
       }
 
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        // Not logged in -> straight to login (no profile to check).
+        router.replace("/login");
+        return;
+      }
+
       const { data: player } = await supabase
         .from("players")
         .select("onboardingCompleted")
+        .eq("id", user.id)
         .maybeSingle();
 
       if (!player) {
@@ -147,19 +156,60 @@ export default function PlayerLayout({
 
           {/* Dev Mode Indicator */}
           {DEV_MODE && (
-            <div className="mb-4 rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-center">
-              <p className="text-xs font-semibold text-amber-300">DEV MODE</p>
-              <p className="mt-1 text-[10px] text-amber-400/70">Onboarding checks disabled</p>
+            <div className="mb-4 rounded-xl border-2 border-amber-500/40 bg-amber-500/15 px-4 py-5 text-center">
+              <p className="text-2xl font-extrabold tracking-wide text-amber-300">DEV MODE</p>
+              <p className="mt-3 text-sm font-bold leading-snug text-amber-200">
+                NOT TO BE DISABLED BY AAYANA.
+              </p>
+              <p className="mt-2 text-xs font-semibold leading-snug text-amber-400/90">
+                AAYANA MUST WORK ON UI CHANGES — THIS I WILL DO AS IT MAY BE A BIT TRICKY.
+              </p>
             </div>
           )}
 
-          {/* Log out */}
-          <div className="border-t border-white/[0.06] pt-4">
+          {/* Profile + Log out, pinned at the bottom */}
+          <div className="space-y-0.5 border-t border-white/[0.06] pt-4">
+            <Link
+              href="/player/profile"
+              className={
+                "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm tracking-wide transition-colors " +
+                (pathname === "/player/profile"
+                  ? "bg-white/[0.04] font-medium text-white"
+                  : "text-white/45 hover:text-white/90")
+              }
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4 shrink-0"
+              >
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              <span>Profile</span>
+            </Link>
             <button
               onClick={handleLogout}
-              className="w-full rounded-md px-3 py-2.5 text-left text-sm tracking-wide text-white/40 transition-colors hover:text-white/90"
+              className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm tracking-wide text-white/40 transition-colors hover:text-white/90"
             >
-              Log out
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4 shrink-0"
+              >
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+              <span>Log out</span>
             </button>
           </div>
         </aside>
