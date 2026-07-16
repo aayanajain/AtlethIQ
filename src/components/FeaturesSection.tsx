@@ -213,12 +213,6 @@ export default function FeaturesSection() {
           viewport={{ once: true, margin: "-80px" }}
           className="text-center mb-16"
         >
-          <p
-            className="text-xs font-bold tracking-[0.22em] uppercase mb-5"
-            style={{ color: "#14B8A6" }}
-          >
-            Core Features
-          </p>
           <h2
             id="features-heading"
             className="font-extrabold text-white mx-auto"

@@ -82,9 +82,9 @@ function Navbar() {
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-8 text-sm text-white/50">
           {["About", "Features", "Coaches", "Pricing", "Contact"].map((item) => (
-            <a 
-              key={item} 
-              href="#" 
+            <a
+              key={item}
+              href="#"
               className="relative font-medium transition-colors duration-250 hover:text-white group"
             >
               {item}
@@ -127,9 +127,9 @@ function Navbar() {
             className="md:hidden border-t border-white/[0.06] backdrop-blur-xl bg-[#050505]/90 px-6 pb-6 pt-4 space-y-4"
           >
             {["About", "Features", "Coaches", "Pricing", "Contact"].map((item) => (
-              <a 
-                key={item} 
-                href="#" 
+              <a
+                key={item}
+                href="#"
                 className="block text-white/50 hover:text-white transition-colors duration-250 py-1 text-sm font-medium"
               >
                 {item}
@@ -243,22 +243,6 @@ export default function HeroSection() {
           {/* LEFT — Content */}
           <div className="max-w-2xl pt-24 pb-32">
 
-            {/* Label */}
-            <motion.div
-              custom={0}
-              variants={fadeUp}
-              initial="hidden"
-              animate="visible"
-              className="mb-6"
-            >
-              <span
-                className="text-xs font-bold tracking-[0.2em] uppercase"
-                style={{ color: "#22c55e" }}
-              >
-                AI-POWERED FOOTBALL COACHING
-              </span>
-            </motion.div>
-
             {/* Headline */}
             <motion.h1
               custom={0.15}
@@ -272,8 +256,8 @@ export default function HeroSection() {
                 letterSpacing: "-0.02em",
               }}
             >
-              TRAIN SMART.<br />
-              PLAY BETTER.
+              TRAIN SMART<br />
+              PLAY BETTER
             </motion.h1>
 
             {/* Supporting text */}

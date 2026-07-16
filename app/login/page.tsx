@@ -1,15 +1,9 @@
 "use client";
-// app/login/page.tsx
-//
-// PUBLIC login page. Keeps the Player / Coach toggle:
-//   - Player: REAL login (email + password checked by Supabase). On success we
-//     go to the player dashboard.
-//   - Coach: still a demo doorway (no accounts yet) — it just opens the coach
-//     placeholder. Real coach auth comes later.
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { supabase } from "@/src/lib/supabase";
 
 type Role = "player" | "coach";
@@ -19,6 +13,7 @@ export default function LoginPage() {
   const [role, setRole] = useState<Role>("player");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,7 +22,6 @@ export default function LoginPage() {
     setBusy(true);
     setError(null);
 
-    // Real auth: Supabase checks the email + password against the database.
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -39,124 +33,250 @@ export default function LoginPage() {
       return;
     }
 
-    // Logged in — the session cookie is set, so the /player gate will let us in.
     router.push("/player");
   }
 
+  async function handleCoachLogin(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setError(null);
+
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (signInError) {
+      setError(signInError.message);
+      setBusy(false);
+      return;
+    }
+
+    router.push("/coach");
+  }
+
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-6 py-12">
-      <Link href="/" className="text-sm text-emerald-600 hover:underline">
-        ← Home
-      </Link>
+    <main 
+      className="flex min-h-screen w-full"
+      style={{
+        background: `
+          radial-gradient(circle 1200px at 0% 100%,
+            rgba(20,184,166,0.25) 0%,
+            rgba(20,184,166,0.12) 30%,
+            rgba(13,148,136,0.08) 50%,
+            transparent 70%),
+          radial-gradient(circle 800px at 100% 0%,
+            rgba(16,185,129,0.15) 0%,
+            rgba(16,185,129,0.05) 40%,
+            transparent 60%),
+          linear-gradient(135deg, #000000 0%, #0a0a0a 50%, #050505 100%)
+        `,
+      }}
+    >
+      {/* Left Panel - Branding */}
+      <div className="relative hidden lg:flex flex-col w-1/2">
+        {/* Logo */}
+        <div className="absolute z-10 top-8 left-8">
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/logo.png"
+              alt="AthleteIQ"
+              width={160}
+              height={44}
+              style={{ height: "auto", width: "160px" }}
+              priority
+            />
+          </Link>
+        </div>
 
-      <h1 className="mt-4 text-3xl font-bold text-zinc-900 dark:text-zinc-50">
-        Log in
-      </h1>
-      <p className="mt-1 text-zinc-600 dark:text-zinc-400">
-        Choose how you want to log in.
-      </p>
+        {/* Main Content */}
+        <div className="relative z-10 flex flex-col justify-center flex-1 px-16 pl-32">
+          <h1 className="text-6xl font-bold leading-tight">
+            <span className="block text-white">Ready to Unlock</span>
+            <span className="block text-white">Your <span className="text-teal-500">Football</span></span>
+            <span className="block text-teal-500">Potential</span>
+          </h1>
 
-      {/* --- Player / Coach toggle --- */}
-      <div className="mt-6 grid grid-cols-2 gap-2 rounded-full bg-zinc-100 p-1 dark:bg-zinc-800">
-        <ToggleButton active={role === "player"} onClick={() => setRole("player")}>
-          ⚽ Player
-        </ToggleButton>
-        <ToggleButton active={role === "coach"} onClick={() => setRole("coach")}>
-          📋 Coach
-        </ToggleButton>
+          <p className="text-lg text-gray-400 mt-6 max-w-md leading-relaxed">
+            Personalized AI coaching that helps every footballer train smarter, improve faster, and perform at their best.
+          </p>
+        </div>
       </div>
 
-      {role === "player" ? (
-        // --- Real player login ---
-        <form onSubmit={handlePlayerLogin} className="mt-6 space-y-4">
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              Email
-            </span>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="you@example.com"
-              className={inputClass}
-            />
-          </label>
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              Password
-            </span>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="••••••••"
-              className={inputClass}
-            />
-          </label>
-
-          <button
-            type="submit"
-            disabled={busy}
-            className="w-full rounded-lg bg-emerald-600 px-4 py-2.5 font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
-          >
-            {busy ? "Logging in…" : "Log in"}
-          </button>
-
-          {error && <p className="text-sm text-red-600">{error}</p>}
-
-          <p className="text-center text-sm text-zinc-500">
-            New here?{" "}
-            <Link href="/signup" className="font-medium text-emerald-600 hover:underline">
-              Create an account
-            </Link>
-          </p>
-        </form>
-      ) : (
-        // --- Coach demo doorway (no real auth yet) ---
-        <div className="mt-6">
-          <p className="rounded-lg bg-zinc-100 px-4 py-3 text-sm text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-            Coach accounts are coming soon. For now you can preview the coach
-            dashboard.
-          </p>
-          <button
-            onClick={() => router.push("/coach")}
-            className="mt-3 w-full rounded-lg bg-indigo-600 px-4 py-2.5 font-medium text-white hover:bg-indigo-700"
-          >
-            Preview coach dashboard →
-          </button>
+      {/* Right Panel - Login Form */}
+      <div className="flex flex-col justify-center items-center w-full lg:w-1/2 min-h-screen px-6">
+        {/* Mobile Logo */}
+        <div className="lg:hidden absolute top-8 left-6">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
+              <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5">
+                <circle cx="12" cy="12" r="10" stroke="#0a0f14" strokeWidth="2" />
+                <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" stroke="#0a0f14" strokeWidth="2" />
+              </svg>
+            </div>
+            <span className="text-xl font-bold text-white">AthleteIQ</span>
+          </div>
         </div>
-      )}
+
+        {/* Login Card */}
+        <div
+          className="w-full max-w-md rounded-2xl p-8"
+          style={{
+            background: "rgba(10, 10, 10, 0.6)",
+            border: "1px solid rgba(255, 255, 255, 0.08)",
+            backdropFilter: "blur(20px)",
+          }}
+        >
+          {/* Heading */}
+          <h2 className="text-3xl font-bold text-white text-center mb-2">
+            Welcome back
+          </h2>
+          <p className="text-gray-400 text-center mb-8">
+            Log in to continue your journey
+          </p>
+
+          {/* Role Toggle */}
+          <div className="flex gap-3 mb-6">
+            <button
+              type="button"
+              onClick={() => {
+                setRole("player");
+                setError(null);
+              }}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                role === "player"
+                  ? "bg-teal-500 text-black border border-teal-500"
+                  : "bg-transparent text-gray-400 border border-white/10 hover:border-white/20"
+              }`}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              Player
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setRole("coach");
+                setError(null);
+              }}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                role === "coach"
+                  ? "bg-teal-500 text-black border border-teal-500"
+                  : "bg-transparent text-gray-400 border border-white/10 hover:border-white/20"
+              }`}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                <path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
+                <path d="M12.5 14c3.5 0 6.5 1 6.5 4v2H5v-2c0-3 3-4 6.5-4z" />
+                <path d="M22 10h-3m-2.5-3L18 4M6 7L7.5 4M2 10h3" />
+              </svg>
+              Coach
+            </button>
+          </div>
+
+          {role === "player" || role === "coach" ? (
+            <form onSubmit={role === "player" ? handlePlayerLogin : handleCoachLogin} className="space-y-5">
+              {/* Email */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Email
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+                      <rect x="2" y="4" width="20" height="16" rx="2" />
+                      <path d="M22 7l-10 7L2 7" />
+                    </svg>
+                  </span>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    placeholder="example@gmail.com"
+                    className="w-full pl-12 pr-4 py-3 bg-black/40 border border-white/10 rounded-lg text-white placeholder-gray-500 outline-none focus:border-teal-500 transition-colors"
+                  />
+                </div>
+              </div>
+
+              {/* Password */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Password
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+                      <rect x="3" y="11" width="18" height="11" rx="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                  </span>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    placeholder="••••••••"
+                    className="w-full pl-12 pr-12 py-3 bg-black/40 border border-white/10 rounded-lg text-white placeholder-gray-500 outline-none focus:border-teal-500 transition-colors"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-teal-500 transition-colors"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+                      {showPassword ? (
+                        <>
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                          <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                          <line x1="1" y1="1" x2="23" y2="23" />
+                        </>
+                      ) : (
+                        <>
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </>
+                      )}
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              {/* Error Message */}
+              {error && (
+                <p className="text-sm text-red-400 bg-red-500 bg-opacity-10 border border-red-500 border-opacity-20 rounded-lg px-4 py-3">
+                  {error}
+                </p>
+              )}
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={busy}
+                className="w-full flex items-center justify-center gap-2 py-3 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {busy ? "Logging in…" : "Log in"}
+                {!busy && (
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4">
+                    <path d="M3 8h10M9 4l4 4-4 4" />
+                  </svg>
+                )}
+              </button>
+
+              {/* Sign up link */}
+              <p className="text-center text-sm text-gray-400 pt-2">
+                New here?{" "}
+                <Link href="/signup" className="font-medium text-teal-500 hover:text-teal-400 transition-colors">
+                  Create an account
+                </Link>
+              </p>
+            </form>
+          ) : null}
+        </div>
+      </div>
     </main>
-  );
-}
-
-const inputClass =
-  "w-full rounded-lg border border-zinc-300 px-3 py-2 text-zinc-900 " +
-  "outline-none focus:border-emerald-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50";
-
-function ToggleButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={
-        "rounded-full py-2 text-sm font-medium transition " +
-        (active
-          ? "bg-white text-zinc-900 shadow dark:bg-zinc-950 dark:text-zinc-50"
-          : "text-zinc-500")
-      }
-    >
-      {children}
-    </button>
   );
 }
