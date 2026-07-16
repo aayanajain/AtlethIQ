@@ -1,9 +1,4 @@
 "use client";
-// app/signup/page.tsx
-//
-// PUBLIC signup page for new PLAYER accounts. Creates a real Supabase auth user
-// (email + password), then a matching `profiles` row (role = player), then
-// sends them to fill in their football profile.
 
 import { useState } from "react";
 import Link from "next/link";
@@ -15,6 +10,7 @@ export default function SignupPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -62,80 +58,207 @@ export default function SignupPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-6 py-12">
-      <Link href="/" className="text-sm text-emerald-600 hover:underline">
-        ← Home
-      </Link>
+    <main 
+      className="flex min-h-screen w-full"
+      style={{
+        background: `
+          radial-gradient(circle 1200px at 0% 100%,
+            rgba(20,184,166,0.25) 0%,
+            rgba(20,184,166,0.12) 30%,
+            rgba(13,148,136,0.08) 50%,
+            transparent 70%),
+          radial-gradient(circle 800px at 100% 0%,
+            rgba(16,185,129,0.15) 0%,
+            rgba(16,185,129,0.05) 40%,
+            transparent 60%),
+          linear-gradient(135deg, #000000 0%, #0a0a0a 50%, #050505 100%)
+        `,
+      }}
+    >
+      {/* Left Panel - Branding */}
+      <div className="relative hidden lg:flex flex-col w-1/2">
+        {/* Logo */}
+        <div className="absolute z-10 top-8 left-8">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
+              <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5">
+                <circle cx="12" cy="12" r="10" stroke="#0a0f14" strokeWidth="2" />
+                <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" stroke="#0a0f14" strokeWidth="2" />
+              </svg>
+            </div>
+            <span className="text-xl font-bold text-white">AthleteIQ</span>
+          </div>
+        </div>
 
-      <h1 className="mt-4 text-3xl font-bold text-zinc-900 dark:text-zinc-50">
-        Create your account
-      </h1>
-      <p className="mt-1 text-zinc-600 dark:text-zinc-400">Sign up as a player.</p>
+        {/* Main Content */}
+        <div className="relative z-10 flex flex-col justify-center flex-1 px-16 pl-32">
+          <h1 className="text-6xl font-bold leading-tight">
+            <span className="block text-white">Start Your</span>
+            <span className="block text-white">Journey to</span>
+            <span className="block text-teal-500">Excellence</span>
+          </h1>
 
-      <form onSubmit={handleSignup} className="mt-6 space-y-4">
-        <Field label="Name">
-          <input
-            className={inputClass}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            placeholder="e.g. Sam Rivera"
-          />
-        </Field>
-        <Field label="Email">
-          <input
-            className={inputClass}
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            placeholder="you@example.com"
-          />
-        </Field>
-        <Field label="Password">
-          <input
-            className={inputClass}
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={6}
-            placeholder="at least 6 characters"
-          />
-        </Field>
+          <p className="text-lg text-gray-400 mt-6 max-w-md leading-relaxed">
+            Join thousands of footballers using AI-powered coaching to reach their full potential. Your personalized training starts here.
+          </p>
+        </div>
+      </div>
 
-        <button
-          type="submit"
-          disabled={busy}
-          className="w-full rounded-lg bg-emerald-600 px-4 py-2.5 font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+      {/* Right Panel - Signup Form */}
+      <div className="flex flex-col justify-center items-center w-full lg:w-1/2 min-h-screen px-6">
+        {/* Mobile Logo */}
+        <div className="lg:hidden absolute top-8 left-6">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
+              <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5">
+                <circle cx="12" cy="12" r="10" stroke="#0a0f14" strokeWidth="2" />
+                <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" stroke="#0a0f14" strokeWidth="2" />
+              </svg>
+            </div>
+            <span className="text-xl font-bold text-white">AthleteIQ</span>
+          </div>
+        </div>
+
+        {/* Signup Card */}
+        <div
+          className="w-full max-w-md rounded-2xl p-8"
+          style={{
+            background: "rgba(10, 10, 10, 0.6)",
+            border: "1px solid rgba(255, 255, 255, 0.08)",
+            backdropFilter: "blur(20px)",
+          }}
         >
-          {busy ? "Creating…" : "Sign up"}
-        </button>
+          {/* Heading */}
+          <h2 className="text-3xl font-bold text-white text-center mb-2">
+            Create your account
+          </h2>
+          <p className="text-gray-400 text-center mb-8">
+            Sign up to start training smarter
+          </p>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
-      </form>
+          <form onSubmit={handleSignup} className="space-y-5">
+            {/* Name */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Name
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                </span>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  placeholder="e.g. Sam Rivera"
+                  className="w-full pl-12 pr-4 py-3 bg-black/40 border border-white/10 rounded-lg text-white placeholder-gray-500 outline-none focus:border-teal-500 transition-colors"
+                />
+              </div>
+            </div>
 
-      <p className="mt-6 text-center text-sm text-zinc-500">
-        Already have an account?{" "}
-        <Link href="/login" className="font-medium text-emerald-600 hover:underline">
-          Log in
-        </Link>
-      </p>
+            {/* Email */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Email
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+                    <rect x="2" y="4" width="20" height="16" rx="2" />
+                    <path d="M22 7l-10 7L2 7" />
+                  </svg>
+                </span>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="you@example.com"
+                  className="w-full pl-12 pr-4 py-3 bg-black/40 border border-white/10 rounded-lg text-white placeholder-gray-500 outline-none focus:border-teal-500 transition-colors"
+                />
+              </div>
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Password
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+                    <rect x="3" y="11" width="18" height="11" rx="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                </span>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  placeholder="at least 6 characters"
+                  className="w-full pl-12 pr-12 py-3 bg-black/40 border border-white/10 rounded-lg text-white placeholder-gray-500 outline-none focus:border-teal-500 transition-colors"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-teal-500 transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+                    {showPassword ? (
+                      <>
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                        <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                        <line x1="1" y1="1" x2="23" y2="23" />
+                      </>
+                    ) : (
+                      <>
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </>
+                    )}
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Error Message */}
+            {error && (
+              <p className="text-sm text-red-400 bg-red-500 bg-opacity-10 border border-red-500 border-opacity-20 rounded-lg px-4 py-3">
+                {error}
+              </p>
+            )}
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={busy}
+              className="w-full flex items-center justify-center gap-2 py-3 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {busy ? "Creating account…" : "Sign up"}
+              {!busy && (
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4">
+                  <path d="M3 8h10M9 4l4 4-4 4" />
+                </svg>
+              )}
+            </button>
+
+            {/* Login link */}
+            <p className="text-center text-sm text-gray-400 pt-2">
+              Already have an account?{" "}
+              <Link href="/login" className="font-medium text-teal-500 hover:text-teal-400 transition-colors">
+                Log in
+              </Link>
+            </p>
+          </form>
+        </div>
+      </div>
     </main>
-  );
-}
-
-const inputClass =
-  "w-full rounded-lg border border-zinc-300 px-3 py-2 text-zinc-900 " +
-  "outline-none focus:border-emerald-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50";
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="block">
-      <span className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-        {label}
-      </span>
-      {children}
-    </label>
   );
 }
