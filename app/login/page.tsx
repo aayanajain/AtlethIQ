@@ -77,16 +77,15 @@ export default function LoginPage() {
       <div className="relative hidden lg:flex flex-col w-1/2">
         {/* Logo */}
         <div className="absolute z-10 top-8 left-8">
-          <Link href="/" className="flex items-center">
-            <Image
-              src="/logo.png"
-              alt="AthleteIQ"
-              width={160}
-              height={44}
-              style={{ height: "auto", width: "160px" }}
-              priority
-            />
-          </Link>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
+              <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5">
+                <circle cx="12" cy="12" r="10" stroke="#0a0f14" strokeWidth="2" />
+                <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" stroke="#0a0f14" strokeWidth="2" />
+              </svg>
+            </div>
+            <span className="text-xl font-bold text-white">AthleteIQ</span>
+          </div>
         </div>
 
         {/* Main Content */}
