@@ -12,6 +12,7 @@ import { createServerSupabase } from "@/src/lib/supabase/server";
 import { ROLE_ATTRIBUTES, roleLabel } from "@/src/lib/positions";
 import { drillLabel, DRILLS } from "@/src/lib/drills";
 import { sessionTypeLabel } from "@/src/lib/sessionTypes";
+import { calculateAge, getGoalLabel } from "@/src/lib/onboarding";
 import type {
   Player,
   Session,
@@ -138,7 +139,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Server is missing GROQ_API_KEY." }, { status: 500 });
     }
 
-    const { data: playerRow } = await supabase.from("players").select("*").limit(1).maybeSingle();
+    const { data: playerRow } = await supabase
+      .from("players")
+      .select("*")
+      .eq("id", user.id)
+      .maybeSingle();
     if (!playerRow) {
       return NextResponse.json({ error: "No player profile found." }, { status: 400 });
     }
@@ -176,9 +181,34 @@ export async function POST(request: Request) {
       (d) => d.sessionTypes.includes("team") || d.sessionTypes.includes("solo")
     ).map((d) => d.label);
 
+    // Build a readable profile block from the onboarding fields so the AI can
+    // tailor difficulty, focus, and the schedule to THIS player — not just their
+    // position. Every line is optional; we only include what's actually set.
+    const age = player.dateOfBirth ? calculateAge(player.dateOfBirth) : null;
+    const goalsList = (player.goals ?? []).map(getGoalLabel);
+    const dayLabels = (player.trainingDays ?? []).map(
+      (d) => d.charAt(0).toUpperCase() + d.slice(1)
+    );
+    const profile = [
+      `Position: ${roleLabel(player.position)}`,
+      age !== null ? `Age: ${age}` : null,
+      player.fitnessLevel ? `Fitness level: ${player.fitnessLevel}` : null,
+      player.yearsPlaying != null ? `Years playing: ${player.yearsPlaying}` : null,
+      player.dominantFoot ? `Dominant foot: ${player.dominantFoot}` : null,
+      player.currentFocus ? `Current focus: ${player.currentFocus}` : null,
+      goalsList.length ? `Goals: ${goalsList.join("; ")}` : null,
+      dayLabels.length ? `Available training days: ${dayLabels.join(", ")}` : null,
+      player.preferredTime ? `Preferred time: ${player.preferredTime}` : null,
+      player.sessionDuration ? `Typical session length: ${player.sessionDuration} min` : null,
+    ]
+      .filter(Boolean)
+      .join("\n");
+
     const system = `
-You are a football (soccer) development coach for a YOUTH ${roleLabel(player.position)} (aged 10-18).
-Their focus: ${player.currentFocus || "not set"}. Their goal: ${player.goal || "not set"}.
+You are a football (soccer) development coach for a YOUTH player (aged 10-18).
+
+PLAYER PROFILE:
+${profile}
 
 THIS PLAN'S PURPOSE:
 ${horizonGuidance(horizon, context)}
@@ -202,9 +232,13 @@ Guidance:
 - "trends": one entry per attribute with enough evidence (labels above).
 - "mismatchFlag": present=true with a short message ONLY for a real concern
   (e.g. a plateau, or repeated high effort + low mood suggesting fatigue); else null.
-- "nextFocus": the single most useful thing to work on next for this purpose, with encouraging reasoning.
-- "drillPlan": 2-4 drills that fit the purpose. Prefer these real drills where they fit: ${recommendable.join(", ")}.
-- "schedule": follow the plan purpose above (include for week/tournament; [] if not needed).
+- "nextFocus": the single most useful thing to work on next for this purpose, with encouraging reasoning. Let their stated goals${goalsList.length ? ` (${goalsList.join("; ")})` : ""} and dominant foot steer this where the training history supports it.
+- "drillPlan": 2-4 drills that fit the purpose. Prefer these real drills where they fit: ${recommendable.join(", ")}. Calibrate difficulty to their fitness level${player.fitnessLevel ? ` (${player.fitnessLevel})` : ""} and experience — challenging but achievable, always age-appropriate.
+- "schedule": follow the plan purpose above (include for week/tournament; [] if not needed).${
+      dayLabels.length
+        ? ` For week/tournament plans, build it around the days they can actually train (${dayLabels.join(", ")})${player.sessionDuration ? ` and their typical ${player.sessionDuration}-min session` : ""} — don't schedule days they aren't available.`
+        : ""
+    }
 
 Rules (user is a minor): encouraging, "try this" not "you're behind",
 age-appropriate, football-specific, no diet/weight talk. Respond with ONLY the JSON.

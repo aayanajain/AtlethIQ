@@ -83,9 +83,21 @@ export default function ProfilePage() {
   // Load existing player profile
   useEffect(() => {
     async function loadProfile() {
+      // Scope the query to the logged-in user. Without this we rely entirely on
+      // RLS to pick the right row, and `.maybeSingle()` throws the moment more
+      // than one row is visible (e.g. under the dev anon policy).
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        router.push("/login");
+        return;
+      }
+
       const { data } = await supabase
         .from("players")
         .select("*")
+        .eq("id", user.id)
         .maybeSingle();
 
       if (!data) {
@@ -123,13 +135,46 @@ export default function ProfilePage() {
 
   // Save current tab's data
   async function handleSave() {
-    setSaving(true);
     setError(null);
     setSuccess(false);
 
-    try {
-      const finalDuration = formData.sessionDuration || parseInt(formData.customDuration);
+    const finalDuration = formData.sessionDuration || parseInt(formData.customDuration);
 
+    // Validate required fields before writing (mirrors the getting-started
+    // wizard). The edit page previously saved blindly, so a cleared field would
+    // either persist an empty value or hit a DB CHECK constraint, and an empty
+    // custom-duration box produced NaN → a NOT NULL int insert error.
+    const validationError =
+      !formData.fullName.trim()
+        ? "Full name is required"
+        : !formData.dateOfBirth || !isValidYouthAge(formData.dateOfBirth)
+        ? "Enter a valid date of birth (age 10–18)"
+        : !formData.gender
+        ? "Please select a gender"
+        : !formData.position
+        ? "Please select a position"
+        : !formData.dominantFoot
+        ? "Please select your dominant foot"
+        : !formData.fitnessLevel
+        ? "Please select a fitness level"
+        : formData.goals.length === 0
+        ? "Please add at least one goal"
+        : formData.trainingDays.length === 0
+        ? "Please select at least one training day"
+        : !formData.preferredTime
+        ? "Please select a preferred time"
+        : !finalDuration || Number.isNaN(finalDuration) || finalDuration <= 0
+        ? "Please set a valid session duration"
+        : null;
+
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    setSaving(true);
+
+    try {
       const updateData: Partial<Player> = {
         fullName: formData.fullName.trim(),
         dateOfBirth: formData.dateOfBirth,

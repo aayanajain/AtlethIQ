@@ -54,8 +54,8 @@ export default function SignupPage() {
       return;
     }
 
-    // 3. Off to set up their football profile.
-    router.push("/player/setup");
+    // 3. Off to set up their football profile (the onboarding wizard).
+    router.push("/player/getting-started");
   }
 
   return (
