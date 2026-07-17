@@ -25,8 +25,8 @@ export default function CTASection() {
       />
 
       <motion.div
-        initial={{ opacity: 0, y: 32 }}
-        whileInView={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0, scale: 0.94 }}
+        whileInView={{ opacity: 1, scale: 1 }}
         viewport={{ once: true, margin: "-80px" }}
         transition={{ duration: 0.8, ease: EASE }}
         className="relative mx-auto max-w-[1400px] px-6 text-center lg:px-12"

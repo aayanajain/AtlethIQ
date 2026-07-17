@@ -8,12 +8,13 @@ import type { Variants } from "framer-motion";
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
+// The two panels slide in from opposite sides, meeting in the middle.
 const panel: Variants = {
-  hidden: { opacity: 0, y: 36 },
+  hidden: (i: number) => ({ opacity: 0, x: i === 0 ? -56 : 56 }),
   visible: (i: number) => ({
     opacity: 1,
-    y: 0,
-    transition: { duration: 0.7, delay: i * 0.12, ease: EASE },
+    x: 0,
+    transition: { duration: 0.75, delay: i * 0.1, ease: EASE },
   }),
 };
 
@@ -27,9 +28,9 @@ const PLAYER = {
   eyebrow: "For players",
   accent: "#14b8a6",
   title: "Your personal AI sports scientist",
-  desc: "Everything a big academy gives its prospects — tailored to you, in your pocket.",
+  desc: "Everything a big academy gives its prospects, tailored to you, in your pocket.",
   points: [
-    "Conversational logging — no spreadsheets, just talk",
+    "Conversational logging, no spreadsheets, just talk",
     "Position-aware drills tuned to your goals & schedule",
     "Development curves that show you improving over weeks",
     "A mentor you can ask anything, any time",
@@ -48,7 +49,7 @@ const COACH = {
     "Set a focus directive for any player in seconds",
     "An attention list that surfaces who’s stalling or fatigued",
     "Mismatch flags when the plan and the sessions disagree",
-    "Individual tracking for large squads — no per-player admin",
+    "Individual tracking for large squads, no per-player admin",
   ],
   cta: { label: "Explore the coach view", href: "/login?role=coach" },
 };

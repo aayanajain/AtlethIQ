@@ -8,20 +8,26 @@ import type { Variants } from "framer-motion";
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 const sectionVariants: Variants = {
-  hidden: { opacity: 0, y: 48 },
+  hidden: { opacity: 0, scale: 0.92 },
   visible: {
     opacity: 1,
-    y: 0,
+    scale: 1,
     transition: { duration: 0.8, ease: EASE },
   },
 };
 
+// Cards fan in from different directions: left, up, right.
 const cardVariants: Variants = {
-  hidden: { opacity: 0, y: 36 },
+  hidden: (i: number) => ({
+    opacity: 0,
+    x: i === 0 ? -56 : i === 2 ? 56 : 0,
+    y: i === 1 ? 48 : 0,
+  }),
   visible: (i: number) => ({
     opacity: 1,
+    x: 0,
     y: 0,
-    transition: { duration: 0.7, delay: i * 0.14, ease: EASE },
+    transition: { duration: 0.7, delay: i * 0.12, ease: EASE },
   }),
 };
 
@@ -32,14 +38,14 @@ const CARDS = [
     num: "01",
     image: "/home%205.jpg",
     title: "Describe Your Session",
-    desc: "Tell AthletIQ about your match or training in plain words. The AI reads your game and pinpoints where to improve — finishing, passing, stamina, control.",
+    desc: "Tell AthletIQ about your match or training in plain words. The AI reads your game and pinpoints where to improve, finishing, passing, stamina, control.",
     link: "Get Started",
   },
   {
     num: "02",
     image: "/home%204.jpg",
     title: "Stats & Performance Tracking",
-    desc: "Watch your progress after every session — development curves, position-aware metrics, and AI-generated insights that show exactly how you’re growing.",
+    desc: "Watch your progress after every session, development curves, position-aware metrics, and AI-generated insights that show exactly how you’re growing.",
     link: "See Your Stats",
   },
   {

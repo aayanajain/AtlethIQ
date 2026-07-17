@@ -71,7 +71,7 @@ function Navbar() {
       className={[
         "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
         scrolled
-          ? "backdrop-blur-xl bg-[#050505]/70 border-b border-white/[0.06] shadow-lg shadow-black/30"
+          ? "backdrop-blur-xl bg-[#050505]/70 shadow-lg shadow-black/30"
           : "bg-transparent",
       ].join(" ")}
     >
@@ -79,11 +79,11 @@ function Navbar() {
         {/* Logo */}
         <Link href="/" className="flex items-center opacity-90 hover:opacity-100 transition-opacity duration-200">
           <Image
-            src="/logo_new.png"
+            src="/logo_trim.png"
             alt="AthleteIQ"
-            width={200}
-            height={55}
-            style={{ height: "44px", width: "auto", mixBlendMode: "screen" }}
+            width={234}
+            height={88}
+            style={{ height: "48px", width: "auto", mixBlendMode: "screen", marginTop: "10px" }}
             priority
           />
         </Link>
@@ -109,8 +109,8 @@ function Navbar() {
           </Link>
           <Link
             href="/signup"
-            className="text-sm font-semibold px-5 py-2 rounded-md text-white border transition-all duration-200 hover:bg-[#22c55e] hover:border-[#22c55e] hover:text-white active:scale-[0.98]"
-            style={{ border: "1.5px solid #22c55e", color: "#22c55e" }}
+            className="text-sm font-semibold px-5 py-2 rounded-md text-[#22c55e] border transition-all duration-200 hover:bg-[#22c55e] hover:border-[#22c55e] hover:text-white active:scale-[0.98]"
+            style={{ border: "1.5px solid #22c55e" }}
           >
             Get Started
           </Link>
@@ -300,22 +300,6 @@ export default function HeroSection() {
                   <path d="M6 3l6 5-6 5" />
                 </svg>
               </Link>
-
-              {/* Secondary — transparent with icon */}
-              <button
-                className="group inline-flex items-center gap-2.5 px-8 py-3.5 rounded-md font-semibold text-base text-white transition-all duration-300 hover:bg-white/10 active:scale-[0.98]"
-                style={{
-                  background: "rgba(255,255,255,0.05)",
-                  border: "1px solid rgba(255,255,255,0.2)",
-                }}
-              >
-                <span className="w-7 h-7 rounded-full flex items-center justify-center bg-white/10 group-hover:bg-white/20 transition-colors">
-                  <svg viewBox="0 0 16 16" fill="white" className="w-3 h-3 ml-0.5">
-                    <path d="M5 3.5v9l7-4.5-7-4.5z" />
-                  </svg>
-                </span>
-                Watch Demo
-              </button>
             </motion.div>
           </div>
         </div>

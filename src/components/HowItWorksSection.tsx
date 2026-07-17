@@ -50,17 +50,17 @@ const STEPS = [
   {
     num: "01",
     title: "Log it in plain words",
-    desc: "“Played 60 mins, legs felt heavy, but my finishing was sharp.” No forms, no stats — just say what happened.",
+    desc: "“Played 60 mins, legs felt heavy, but my finishing was sharp.” No forms, no stats, just say what happened.",
   },
   {
     num: "02",
     title: "The AI reads your game",
-    desc: "Your note becomes position-aware metrics — finishing, passing, stamina, weak foot — judged the way a #9 or a #6 should be.",
+    desc: "Your note becomes position-aware metrics, finishing, passing, stamina, weak foot, judged the way a #9 or a #6 should be.",
   },
   {
     num: "03",
     title: "Get an adaptive plan",
-    desc: "A personalized plan with targeted drills, tuned to your goals and availability — and rewritten as you improve.",
+    desc: "A personalized plan with targeted drills, tuned to your goals and availability, and rewritten as you improve.",
   },
   {
     num: "04",
