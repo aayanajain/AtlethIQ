@@ -656,7 +656,7 @@ function Step1Personal({
             </div>
             {age !== null && (
               <p className={`mt-1.5 text-xs ${isValidAge ? "text-white/40" : "text-red-400"}`}>
-                {isValidAge ? `${age} years old` : `Age must be 10–18 (currently ${age})`}
+                {isValidAge ? `${age} years old` : `Age must be 10–39 (currently ${age})`}
               </p>
             )}
           </div>

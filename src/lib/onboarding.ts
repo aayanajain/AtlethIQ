@@ -220,13 +220,13 @@ export function calculateAge(dateOfBirth: string): number {
 }
 
 /**
- * Validate that a date of birth is reasonable for a youth player (ages 10-18).
+ * Validate that a date of birth is reasonable for a player (ages 10-39).
  * @param dateOfBirth ISO date string (YYYY-MM-DD)
- * @returns True if age is between 10 and 18
+ * @returns True if age is between 10 and 39
  */
 export function isValidYouthAge(dateOfBirth: string): boolean {
   const age = calculateAge(dateOfBirth);
-  return age >= 10 && age <= 18;
+  return age >= 10 && age <= 39;
 }
 
 /**

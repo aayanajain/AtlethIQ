@@ -67,8 +67,8 @@ export async function POST(request: Request) {
       typeof sessionType === "string" ? sessionTypeLabel(sessionType as SessionType) : "session";
 
     const system = `
-You are an encouraging, knowledgeable football (soccer) mentor for a YOUTH player
-(aged 10-18) who plays as a ${role}.
+You are an encouraging, knowledgeable football (soccer) mentor for a player
+(aged 10-39) who plays as a ${role}.
 Their current focus: ${focus || "not set"}. Their goal: ${goal || "not set"}.
 
 The player just logged a session. Return:

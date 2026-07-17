@@ -73,7 +73,7 @@ export default function SiteFooter() {
             © {new Date().getFullYear()} AthletIQ. Built for young athletes.
           </p>
           <p className="text-xs text-white/35">
-            Designed to be safe and encouraging for players aged 10–18.
+            Designed to be safe and encouraging for players aged 10–39.
           </p>
         </div>
       </div>

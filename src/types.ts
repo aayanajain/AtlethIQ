@@ -90,8 +90,8 @@ export type TrendDirection = "up" | "flat" | "down";
 // ---------------------------------------------------------------------------
 
 /**
- * A young footballer using the app. Remember: users are minors (ages 10–18),
- * so all content built around a Player must stay age-appropriate.
+ * A footballer using the app (ages 10–39). All content built around a
+ * Player must stay age-appropriate and safe.
  * 
  * Updated for comprehensive onboarding flow with personal, football, physical,
  * goals, and availability information.

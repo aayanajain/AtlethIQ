@@ -14,9 +14,9 @@ under-resourced areas who lack access to elite academy tools, plus a tool that
 helps overstretched coaches track each player individually.
 
 ## Who it's for
-- Primary user: young footballers aged 10–18.
+- Primary user: footballers aged 10–39.
 - Secondary user: their coach (large squads, no per-player tracking tools).
-- Note: users are MINORS. Safety rules below are non-negotiable.
+- Note: safety rules below are non-negotiable.
 
 ## Tech stack (do not change without asking)
 - Next.js (App Router) + TypeScript + Tailwind CSS

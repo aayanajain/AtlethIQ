@@ -205,7 +205,7 @@ export async function POST(request: Request) {
       .join("\n");
 
     const system = `
-You are a football (soccer) development coach for a YOUTH player (aged 10-18).
+You are a football (soccer) development coach for a player (aged 10-39).
 
 PLAYER PROFILE:
 ${profile}
