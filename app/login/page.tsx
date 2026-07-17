@@ -9,7 +9,7 @@ import { supabase } from "@/src/lib/supabase";
 type Role = "player" | "coach";
 
 // ─── DEV MODE TOGGLE ───────────────────────────────────────────────────
-const DEV_MODE = true; // Set to false in production
+const DEV_MODE = false; // Set to false in production
 // ───────────────────────────────────────────────────────────────────────
 
 export default function LoginPage() {
@@ -296,13 +296,15 @@ export default function LoginPage() {
                 )}
               </button>
 
-              {/* Sign up link */}
-              <p className="text-center text-sm text-gray-400 pt-2">
-                New here?{" "}
-                <Link href="/signup" className="font-medium text-teal-500 hover:text-teal-400 transition-colors">
-                  Create an account
-                </Link>
-              </p>
+              {/* Sign up link — players only; coach accounts are provisioned, not self-created */}
+              {role === "player" && (
+                <p className="text-center text-sm text-gray-400 pt-2">
+                  New here?{" "}
+                  <Link href="/signup" className="font-medium text-teal-500 hover:text-teal-400 transition-colors">
+                    Create an account
+                  </Link>
+                </p>
+              )}
             </form>
           ) : null}
         </div>

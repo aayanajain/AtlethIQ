@@ -282,14 +282,8 @@ export default function ProfilePage() {
             <div className="mb-6 flex gap-2 overflow-x-auto border-b border-white/[0.06] pb-2">
               {TABS.map((tab) => {
                 const Icon = tab.icon;
-                const colorMap = {
-                  personal: { border: "border-sky-400", text: "text-sky-400", bg: "bg-sky-500/10", icon: "text-sky-400", iconInactive: "text-sky-500/50" },
-                  football: { border: "border-emerald-400", text: "text-emerald-400", bg: "bg-emerald-500/10", icon: "text-emerald-400", iconInactive: "text-emerald-500/50" },
-                  physical: { border: "border-purple-400", text: "text-purple-400", bg: "bg-purple-500/10", icon: "text-purple-400", iconInactive: "text-purple-500/50" },
-                  goals: { border: "border-blue-400", text: "text-blue-400", bg: "bg-blue-500/10", icon: "text-blue-400", iconInactive: "text-blue-500/50" },
-                  availability: { border: "border-cyan-400", text: "text-cyan-400", bg: "bg-cyan-500/10", icon: "text-cyan-400", iconInactive: "text-cyan-500/50" },
-                };
-                const colors = colorMap[tab.id];
+                // One common theme color (green) across every tab.
+                const colors = { border: "border-green-400", text: "text-green-400", bg: "bg-green-500/10", icon: "text-green-400", iconInactive: "text-green-500/50" };
                 
                 return (
                   <button
@@ -318,27 +312,11 @@ export default function ProfilePage() {
             </div>
 
             {/* Tab Content */}
-            <div 
+            <div
               className="relative overflow-hidden rounded-2xl border p-6 shadow-xl transition-all duration-300 sm:p-8"
               style={{
-                background: activeTab === "personal" 
-                  ? "linear-gradient(to bottom right, rgba(20,184,166,0.08), rgba(8,8,10,0.98))"
-                  : activeTab === "football"
-                  ? "linear-gradient(to bottom right, rgba(16,185,129,0.08), rgba(8,8,10,0.98))"
-                  : activeTab === "physical"
-                  ? "linear-gradient(to bottom right, rgba(168,85,247,0.08), rgba(8,8,10,0.98))"
-                  : activeTab === "goals"
-                  ? "linear-gradient(to bottom right, rgba(59,130,246,0.08), rgba(8,8,10,0.98))"
-                  : "linear-gradient(to bottom right, rgba(6,182,212,0.08), rgba(8,8,10,0.98))",
-                borderColor: activeTab === "personal" 
-                  ? "rgba(20,184,166,0.15)"
-                  : activeTab === "football"
-                  ? "rgba(16,185,129,0.15)"
-                  : activeTab === "physical"
-                  ? "rgba(168,85,247,0.15)"
-                  : activeTab === "goals"
-                  ? "rgba(59,130,246,0.15)"
-                  : "rgba(6,182,212,0.15)",
+                background: "linear-gradient(to bottom right, rgba(34,197,94,0.035), rgba(8,8,10,0.98))",
+                borderColor: "rgba(255,255,255,0.08)",
               }}
             >
               <div className="animate-fadeIn">
@@ -358,52 +336,6 @@ export default function ProfilePage() {
                   <AvailabilityTab formData={formData} setFormData={setFormData} />
                 )}
               </div>
-
-              {/* Messages */}
-              {error && (
-                <div className="mt-6 animate-slideIn flex items-start gap-3 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 backdrop-blur-sm">
-                  <AlertIcon className="h-5 w-5 flex-shrink-0 text-red-400" />
-                  <div>
-                    <p className="text-sm font-medium text-red-300">Error</p>
-                    <p className="mt-0.5 text-xs text-red-300/80">{error}</p>
-                  </div>
-                </div>
-              )}
-              {success && (
-                <div className="mt-6 animate-slideIn flex items-start gap-3 rounded-lg border border-green-500/30 bg-green-500/10 px-4 py-3 backdrop-blur-sm">
-                  <CheckIcon className="h-5 w-5 flex-shrink-0 text-green-400" />
-                  <div>
-                    <p className="text-sm font-medium text-green-300">Success</p>
-                    <p className="mt-0.5 text-xs text-green-300/80">Your profile has been updated successfully</p>
-                  </div>
-                </div>
-              )}
-
-              {/* Save Button */}
-              <div className="mt-8 flex justify-end">
-                <button
-                  onClick={handleSave}
-                  disabled={saving}
-                  className={`group relative overflow-hidden rounded-lg bg-gradient-to-r from-teal-500 to-cyan-500 px-6 py-3 font-semibold text-black shadow-lg transition-all duration-200 hover:shadow-teal-500/25 disabled:opacity-50 disabled:cursor-not-allowed ${
-                    saving ? "animate-pulse" : "hover:scale-[1.02]"
-                  }`}
-                >
-                  <span className="relative z-10 flex items-center gap-2">
-                    {saving ? (
-                      <>
-                        <SparkleIcon className="h-4 w-4 animate-spin" />
-                        Saving Changes...
-                      </>
-                    ) : (
-                      <>
-                        <CheckIcon className="h-4 w-4" />
-                        Save Changes
-                      </>
-                    )}
-                  </span>
-                  <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-500 group-hover:translate-x-full" />
-                </button>
-              </div>
             </div>
           </div>
 
@@ -412,18 +344,18 @@ export default function ProfilePage() {
             <div className="sticky top-8">
               <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#0f1419]">
                 {/* Header Background with Gradient */}
-                <div className="relative h-24 overflow-hidden bg-gradient-to-br from-teal-600/30 via-teal-800/20 to-[#0f1419]">
+                <div className="relative h-24 overflow-hidden bg-gradient-to-br from-green-700/20 via-green-900/10 to-[#0f1419]">
                   <div
-                    className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full opacity-40"
+                    className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full opacity-30"
                     style={{
-                      background: "radial-gradient(circle, rgba(20,184,166,0.5) 0%, transparent 70%)",
+                      background: "radial-gradient(circle, rgba(34,197,94,0.3) 0%, transparent 70%)",
                       filter: "blur(35px)",
                     }}
                   />
                   <div
-                    className="pointer-events-none absolute -left-12 top-0 h-32 w-32 rounded-full opacity-20"
+                    className="pointer-events-none absolute -left-12 top-0 h-32 w-32 rounded-full opacity-15"
                     style={{
-                      background: "radial-gradient(circle, rgba(6,182,212,0.4) 0%, transparent 70%)",
+                      background: "radial-gradient(circle, rgba(34,197,94,0.25) 0%, transparent 70%)",
                       filter: "blur(35px)",
                     }}
                   />
@@ -432,11 +364,11 @@ export default function ProfilePage() {
                 {/* Avatar - overlapping header */}
                 <div className="relative -mt-12 px-6">
                   <div className="relative inline-block">
-                    <div className="flex h-24 w-24 items-center justify-center rounded-2xl border-4 border-[#0f1419] bg-gradient-to-br from-teal-600 to-teal-700 text-3xl font-bold text-white shadow-2xl">
+                    <div className="flex h-24 w-24 items-center justify-center rounded-2xl border-4 border-[#0f1419] bg-gradient-to-br from-green-600 to-green-700 text-3xl font-bold text-white shadow-2xl">
                       {initials}
                     </div>
                     {/* Edit Badge */}
-                    <div className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-lg border-2 border-[#0f1419] bg-teal-500 shadow-lg">
+                    <div className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-lg border-2 border-[#0f1419] bg-green-500 shadow-lg">
                       <UserIcon className="h-4 w-4 text-white" />
                     </div>
                   </div>
@@ -445,13 +377,7 @@ export default function ProfilePage() {
                 {/* Profile Info */}
                 <div className="p-6 pt-4">
                   <h2 className="text-xl font-bold text-white">{player.fullName}</h2>
-                  <p className="mt-1 text-sm font-medium text-teal-400">{positionLabel}</p>
-                  
-                  {/* Level Badge */}
-                  <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-yellow-600/40 bg-yellow-600/20 px-3 py-1 text-xs font-semibold text-yellow-400">
-                    <SparkleIcon className="h-3 w-3" />
-                    Level {Math.min(Math.floor(completionPercentage / 10) + 1, 12)}
-                  </div>
+                  <p className="mt-1 text-sm font-medium text-green-400">{positionLabel}</p>
 
                   {/* Stats Row */}
                   <div className="mt-6 grid grid-cols-3 gap-4 rounded-xl border border-white/10 bg-[#1a1f26] p-4">
@@ -471,11 +397,11 @@ export default function ProfilePage() {
 
                   {/* Quote/Status */}
                   {player.currentFocus && (
-                    <div className="mt-6 rounded-xl border border-teal-600/20 bg-teal-600/10 p-4">
+                    <div className="mt-6 rounded-xl border border-green-600/20 bg-green-600/10 p-4">
                       <div className="flex items-start gap-3">
-                        <TargetIcon className="h-5 w-5 flex-shrink-0 text-teal-400" />
+                        <TargetIcon className="h-5 w-5 flex-shrink-0 text-green-400" />
                         <div>
-                          <p className="text-xs font-medium text-teal-400">Current Focus</p>
+                          <p className="text-xs font-medium text-green-400">Current Focus</p>
                           <p className="mt-1 text-sm text-white/80">{player.currentFocus}</p>
                         </div>
                       </div>
@@ -486,11 +412,11 @@ export default function ProfilePage() {
                   <div className="mt-6">
                     <div className="mb-2 flex items-center justify-between">
                       <span className="text-xs font-medium text-white/50">Profile Strength</span>
-                      <span className="text-sm font-bold text-teal-400">{completionPercentage}%</span>
+                      <span className="text-sm font-bold text-green-400">{completionPercentage}%</span>
                     </div>
                     <div className="relative h-2 overflow-hidden rounded-full bg-white/5">
                       <div
-                        className="h-full rounded-full bg-gradient-to-r from-teal-500 via-cyan-500 to-purple-500 transition-all duration-500"
+                        className="h-full rounded-full bg-green-500 transition-all duration-500"
                         style={{ width: `${completionPercentage}%` }}
                       />
                     </div>
@@ -519,6 +445,47 @@ export default function ProfilePage() {
                   </div>
                 </div>
               </div>
+
+              {/* Messages */}
+              {error && (
+                <div className="mt-4 animate-slideIn flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 backdrop-blur-sm">
+                  <AlertIcon className="h-5 w-5 flex-shrink-0 text-red-400" />
+                  <div>
+                    <p className="text-sm font-medium text-red-300">Error</p>
+                    <p className="mt-0.5 text-xs text-red-300/80">{error}</p>
+                  </div>
+                </div>
+              )}
+              {success && (
+                <div className="mt-4 animate-slideIn flex items-start gap-3 rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3 backdrop-blur-sm">
+                  <CheckIcon className="h-5 w-5 flex-shrink-0 text-green-400" />
+                  <div>
+                    <p className="text-sm font-medium text-green-300">Success</p>
+                    <p className="mt-0.5 text-xs text-green-300/80">Your profile has been updated successfully</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Save Button - below the profile card */}
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className={`mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-teal-700/40 bg-teal-800/60 px-6 py-3 font-semibold text-teal-100 shadow-lg transition-all duration-200 hover:bg-teal-700/70 disabled:cursor-not-allowed disabled:opacity-50 ${
+                  saving ? "animate-pulse" : ""
+                }`}
+              >
+                {saving ? (
+                  <>
+                    <SparkleIcon className="h-4 w-4 animate-spin" />
+                    Saving Changes...
+                  </>
+                ) : (
+                  <>
+                    <CheckIcon className="h-4 w-4" />
+                    Save Changes
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>
@@ -543,22 +510,22 @@ function PersonalTab({ formData, setFormData }: TabProps) {
   return (
     <div className="space-y-6">
       {/* Section Header with Icon and Gradient Background */}
-      <div className="relative overflow-hidden rounded-xl border border-sky-500/20 bg-gradient-to-br from-sky-500/10 via-transparent to-transparent p-4">
+      <div className="relative overflow-hidden rounded-xl border border-white/[0.08] bg-gradient-to-br from-green-500/[0.05] via-transparent to-transparent p-4">
         {/* Ambient glow effect */}
         <div
           className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full opacity-40"
           style={{
-            background: "radial-gradient(circle, rgba(14,165,233,0.3) 0%, transparent 70%)",
+            background: "radial-gradient(circle, rgba(34,197,94,0.15) 0%, transparent 70%)",
             filter: "blur(25px)",
           }}
         />
         <div className="relative flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-sky-500/20 backdrop-blur-sm">
-            <UserIcon className="h-5 w-5 text-sky-300" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-500/10 backdrop-blur-sm">
+            <UserIcon className="h-5 w-5 text-green-300" />
           </div>
           <div>
             <h2 className="text-lg font-bold text-white">Personal Information</h2>
-            <p className="text-xs text-sky-300/70">Update your basic details</p>
+            <p className="text-xs text-white/45">Update your basic details</p>
           </div>
         </div>
       </div>
@@ -574,7 +541,7 @@ function PersonalTab({ formData, setFormData }: TabProps) {
             type="text"
             value={formData.fullName}
             onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-            className="w-full rounded-lg border border-white/10 bg-[#0a0a0c] px-4 py-3 pl-10 text-white outline-none transition focus:border-sky-500 focus:bg-[#0d0d0f]"
+            className="w-full rounded-lg border border-white/10 bg-[#0a0a0c] px-4 py-3 pl-10 text-white outline-none transition focus:border-green-500 focus:bg-[#0d0d0f]"
             required
           />
         </div>
@@ -591,7 +558,7 @@ function PersonalTab({ formData, setFormData }: TabProps) {
             type="date"
             value={formData.dateOfBirth}
             onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
-            className="w-full rounded-lg border border-white/10 bg-[#0a0a0c] px-4 py-3 pl-10 text-white outline-none transition focus:border-sky-500 focus:bg-[#0d0d0f] [color-scheme:dark]"
+            className="w-full rounded-lg border border-white/10 bg-[#0a0a0c] px-4 py-3 pl-10 text-white outline-none transition focus:border-green-500 focus:bg-[#0d0d0f] [color-scheme:dark]"
             required
           />
         </div>
@@ -617,7 +584,7 @@ function PersonalTab({ formData, setFormData }: TabProps) {
                 onClick={() => setFormData({ ...formData, gender: option.value })}
                 className={`flex items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium transition ${
                   isSelected
-                    ? "border-sky-500 bg-sky-500/10 text-sky-300"
+                    ? "border-green-500 bg-green-500/10 text-green-300"
                     : "border-white/10 bg-[#0a0a0c] text-white/60 hover:border-white/20 hover:bg-[#0d0d0f]"
                 }`}
               >
@@ -640,22 +607,22 @@ function FootballTab({ formData, setFormData }: TabProps) {
   return (
     <div className="space-y-6">
       {/* Section Header with Icon and Gradient Background */}
-      <div className="relative overflow-hidden rounded-xl border border-emerald-500/20 bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent p-4">
+      <div className="relative overflow-hidden rounded-xl border border-white/[0.08] bg-gradient-to-br from-green-500/[0.05] via-transparent to-transparent p-4">
         {/* Ambient glow effect */}
         <div
           className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full opacity-40"
           style={{
-            background: "radial-gradient(circle, rgba(16,185,129,0.3) 0%, transparent 70%)",
+            background: "radial-gradient(circle, rgba(34,197,94,0.15) 0%, transparent 70%)",
             filter: "blur(25px)",
           }}
         />
         <div className="relative flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/20 backdrop-blur-sm">
-            <ShieldIcon className="h-5 w-5 text-emerald-300" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-500/10 backdrop-blur-sm">
+            <ShieldIcon className="h-5 w-5 text-green-300" />
           </div>
           <div>
             <h2 className="text-lg font-bold text-white">Football Details</h2>
-            <p className="text-xs text-emerald-300/70">Update your playing information</p>
+            <p className="text-xs text-white/45">Update your playing information</p>
           </div>
         </div>
       </div>
@@ -675,7 +642,7 @@ function FootballTab({ formData, setFormData }: TabProps) {
                 onClick={() => setFormData({ ...formData, position: role.slug })}
                 className={`rounded-lg border px-3 py-3 text-xs font-medium transition ${
                   isSelected
-                    ? "border-emerald-500 bg-emerald-500/10 text-emerald-300"
+                    ? "border-green-500 bg-green-500/10 text-green-300"
                     : "border-white/10 bg-[#0a0a0c] text-white/60 hover:border-white/20 hover:bg-[#0d0d0f]"
                 }`}
               >
@@ -701,7 +668,7 @@ function FootballTab({ formData, setFormData }: TabProps) {
                 onClick={() => setFormData({ ...formData, dominantFoot: option.value })}
                 className={`rounded-lg border px-4 py-3 text-sm font-medium transition ${
                   isSelected
-                    ? "border-emerald-500 bg-emerald-500/10 text-emerald-300"
+                    ? "border-green-500 bg-green-500/10 text-green-300"
                     : "border-white/10 bg-[#0a0a0c] text-white/60 hover:border-white/20 hover:bg-[#0d0d0f]"
                 }`}
               >
@@ -725,7 +692,7 @@ function FootballTab({ formData, setFormData }: TabProps) {
           onChange={(e) =>
             setFormData({ ...formData, yearsPlaying: parseInt(e.target.value) || 0 })
           }
-          className="w-full rounded-lg border border-white/10 bg-[#0a0a0c] px-4 py-3 text-white outline-none transition focus:border-emerald-500 focus:bg-[#0d0d0f]"
+          className="w-full rounded-lg border border-white/10 bg-[#0a0a0c] px-4 py-3 text-white outline-none transition focus:border-green-500 focus:bg-[#0d0d0f]"
         />
       </div>
 
@@ -739,7 +706,7 @@ function FootballTab({ formData, setFormData }: TabProps) {
           value={formData.currentClub}
           onChange={(e) => setFormData({ ...formData, currentClub: e.target.value })}
           placeholder="e.g. City Youth FC"
-          className="w-full rounded-lg border border-white/10 bg-[#0a0a0c] px-4 py-3 text-white placeholder-white/30 outline-none transition focus:border-emerald-500 focus:bg-[#0d0d0f]"
+          className="w-full rounded-lg border border-white/10 bg-[#0a0a0c] px-4 py-3 text-white placeholder-white/30 outline-none transition focus:border-green-500 focus:bg-[#0d0d0f]"
         />
       </div>
     </div>
@@ -754,22 +721,22 @@ function PhysicalTab({ formData, setFormData }: TabProps) {
   return (
     <div className="space-y-6">
       {/* Section Header with Icon and Gradient Background */}
-      <div className="relative overflow-hidden rounded-xl border border-purple-500/20 bg-gradient-to-br from-purple-500/10 via-transparent to-transparent p-4">
+      <div className="relative overflow-hidden rounded-xl border border-white/[0.08] bg-gradient-to-br from-green-500/[0.05] via-transparent to-transparent p-4">
         {/* Ambient glow effect */}
         <div
           className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full opacity-40"
           style={{
-            background: "radial-gradient(circle, rgba(168,85,247,0.3) 0%, transparent 70%)",
+            background: "radial-gradient(circle, rgba(34,197,94,0.15) 0%, transparent 70%)",
             filter: "blur(25px)",
           }}
         />
         <div className="relative flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/20 backdrop-blur-sm">
-            <DumbbellIcon className="h-5 w-5 text-purple-300" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-500/10 backdrop-blur-sm">
+            <DumbbellIcon className="h-5 w-5 text-green-300" />
           </div>
           <div>
             <h2 className="text-lg font-bold text-white">Physical Details</h2>
-            <p className="text-xs text-purple-300/70">Update your physical profile</p>
+            <p className="text-xs text-white/45">Update your physical profile</p>
           </div>
         </div>
       </div>
@@ -787,7 +754,7 @@ function PhysicalTab({ formData, setFormData }: TabProps) {
             value={formData.height}
             onChange={(e) => setFormData({ ...formData, height: e.target.value })}
             placeholder="e.g. 165"
-            className="w-full rounded-lg border border-white/10 bg-[#0a0a0c] px-4 py-3 text-white placeholder-white/30 outline-none transition focus:border-purple-500 focus:bg-[#0d0d0f]"
+            className="w-full rounded-lg border border-white/10 bg-[#0a0a0c] px-4 py-3 text-white placeholder-white/30 outline-none transition focus:border-green-500 focus:bg-[#0d0d0f]"
           />
         </div>
         <div>
@@ -801,7 +768,7 @@ function PhysicalTab({ formData, setFormData }: TabProps) {
             value={formData.weight}
             onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
             placeholder="e.g. 55"
-            className="w-full rounded-lg border border-white/10 bg-[#0a0a0c] px-4 py-3 text-white placeholder-white/30 outline-none transition focus:border-purple-500 focus:bg-[#0d0d0f]"
+            className="w-full rounded-lg border border-white/10 bg-[#0a0a0c] px-4 py-3 text-white placeholder-white/30 outline-none transition focus:border-green-500 focus:bg-[#0d0d0f]"
           />
         </div>
       </div>
@@ -814,18 +781,16 @@ function PhysicalTab({ formData, setFormData }: TabProps) {
         <div className="grid gap-3 sm:grid-cols-3">
           {FITNESS_LEVELS.map((level) => {
             const isSelected = formData.fitnessLevel === level.value;
-            const colorMap: Record<string, string> = {
-              beginner: isSelected ? "border-blue-500 bg-blue-500/10 text-blue-300" : "",
-              intermediate: isSelected ? "border-purple-500 bg-purple-500/10 text-purple-300" : "",
-              advanced: isSelected ? "border-orange-500 bg-orange-500/10 text-orange-300" : "",
-            };
+            const selectedClass = isSelected
+              ? "border-green-500 bg-green-500/10 text-green-300"
+              : "";
             return (
               <button
                 key={level.value}
                 type="button"
                 onClick={() => setFormData({ ...formData, fitnessLevel: level.value })}
                 className={`rounded-lg border px-4 py-4 text-center transition ${
-                  colorMap[level.value] ||
+                  selectedClass ||
                   "border-white/10 bg-[#0a0a0c] text-white/60 hover:border-white/20 hover:bg-[#0d0d0f]"
                 }`}
               >
@@ -874,22 +839,22 @@ function GoalsTab({ formData, setFormData }: TabProps) {
   return (
     <div className="space-y-6">
       {/* Section Header with Icon and Gradient Background */}
-      <div className="relative overflow-hidden rounded-xl border border-blue-500/20 bg-gradient-to-br from-blue-500/10 via-transparent to-transparent p-4">
+      <div className="relative overflow-hidden rounded-xl border border-white/[0.08] bg-gradient-to-br from-green-500/[0.05] via-transparent to-transparent p-4">
         {/* Ambient glow effect */}
         <div
           className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full opacity-40"
           style={{
-            background: "radial-gradient(circle, rgba(59,130,246,0.3) 0%, transparent 70%)",
+            background: "radial-gradient(circle, rgba(34,197,94,0.15) 0%, transparent 70%)",
             filter: "blur(25px)",
           }}
         />
         <div className="relative flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/20 backdrop-blur-sm">
-            <TargetIcon className="h-5 w-5 text-blue-300" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-500/10 backdrop-blur-sm">
+            <TargetIcon className="h-5 w-5 text-green-300" />
           </div>
           <div>
             <h2 className="text-lg font-bold text-white">Your Goals</h2>
-            <p className="text-xs text-blue-300/70">Update what you want to achieve</p>
+            <p className="text-xs text-white/45">Update what you want to achieve</p>
           </div>
         </div>
       </div>
@@ -905,7 +870,7 @@ function GoalsTab({ formData, setFormData }: TabProps) {
               onClick={() => toggleGoal(goal.id)}
               className={`rounded-lg border px-4 py-3 text-left transition ${
                 isSelected
-                  ? "border-blue-500 bg-blue-500/10 text-blue-300"
+                  ? "border-green-500 bg-green-500/10 text-green-300"
                   : "border-white/10 bg-[#0a0a0c] text-white/60 hover:border-white/20 hover:bg-[#0d0d0f]"
               }`}
             >
@@ -914,7 +879,7 @@ function GoalsTab({ formData, setFormData }: TabProps) {
                   <div className="text-sm font-semibold">{goal.label}</div>
                   <div className="mt-0.5 text-xs text-white/40">{goal.description}</div>
                 </div>
-                {isSelected && <CheckIcon className="h-4 w-4 shrink-0 text-blue-400" />}
+                {isSelected && <CheckIcon className="h-4 w-4 shrink-0 text-green-400" />}
               </div>
             </button>
           );
@@ -933,7 +898,7 @@ function GoalsTab({ formData, setFormData }: TabProps) {
             onChange={(e) => setFormData({ ...formData, customGoal: e.target.value })}
             onKeyPress={(e) => e.key === "Enter" && addCustomGoal()}
             placeholder="e.g. Play in a higher division"
-            className="flex-1 rounded-lg border border-white/10 bg-[#0a0a0c] px-4 py-3 text-white placeholder-white/30 outline-none transition focus:border-blue-500 focus:bg-[#0d0d0f]"
+            className="flex-1 rounded-lg border border-white/10 bg-[#0a0a0c] px-4 py-3 text-white placeholder-white/30 outline-none transition focus:border-green-500 focus:bg-[#0d0d0f]"
           />
           <button
             type="button"
@@ -959,13 +924,13 @@ function GoalsTab({ formData, setFormData }: TabProps) {
               return (
                 <span
                   key={goal}
-                  className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-sm text-blue-300"
+                  className="inline-flex items-center gap-2 rounded-full border border-green-500/30 bg-green-500/10 px-3 py-1 text-sm text-green-300"
                 >
                   {label}
                   <button
                     type="button"
                     onClick={() => removeGoal(goal)}
-                    className="text-blue-400 hover:text-blue-300"
+                    className="text-green-400 hover:text-green-300"
                   >
                     ×
                   </button>
@@ -1000,22 +965,22 @@ function AvailabilityTab({ formData, setFormData }: TabProps) {
   return (
     <div className="space-y-6">
       {/* Section Header with Icon and Gradient Background */}
-      <div className="relative overflow-hidden rounded-xl border border-cyan-500/20 bg-gradient-to-br from-cyan-500/10 via-transparent to-transparent p-4">
+      <div className="relative overflow-hidden rounded-xl border border-white/[0.08] bg-gradient-to-br from-green-500/[0.05] via-transparent to-transparent p-4">
         {/* Ambient glow effect */}
         <div
           className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full opacity-40"
           style={{
-            background: "radial-gradient(circle, rgba(6,182,212,0.3) 0%, transparent 70%)",
+            background: "radial-gradient(circle, rgba(34,197,94,0.15) 0%, transparent 70%)",
             filter: "blur(25px)",
           }}
         />
         <div className="relative flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-cyan-500/20 backdrop-blur-sm">
-            <CalendarIcon className="h-5 w-5 text-cyan-300" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-500/10 backdrop-blur-sm">
+            <CalendarIcon className="h-5 w-5 text-green-300" />
           </div>
           <div>
             <h2 className="text-lg font-bold text-white">Availability</h2>
-            <p className="text-xs text-cyan-300/70">Update your training schedule</p>
+            <p className="text-xs text-white/45">Update your training schedule</p>
           </div>
         </div>
       </div>
@@ -1035,7 +1000,7 @@ function AvailabilityTab({ formData, setFormData }: TabProps) {
                 onClick={() => toggleDay(day.value)}
                 className={`rounded-lg border px-2 py-3 text-center text-xs font-semibold transition ${
                   isSelected
-                    ? "border-cyan-500 bg-cyan-500/10 text-cyan-300"
+                    ? "border-green-500 bg-green-500/10 text-green-300"
                     : "border-white/10 bg-[#0a0a0c] text-white/60 hover:border-white/20 hover:bg-[#0d0d0f]"
                 }`}
               >
@@ -1064,7 +1029,7 @@ function AvailabilityTab({ formData, setFormData }: TabProps) {
                 onClick={() => setFormData({ ...formData, preferredTime: time.value })}
                 className={`rounded-lg border px-4 py-4 text-center transition ${
                   isSelected
-                    ? "border-cyan-500 bg-cyan-500/10 text-cyan-300"
+                    ? "border-green-500 bg-green-500/10 text-green-300"
                     : "border-white/10 bg-[#0a0a0c] text-white/60 hover:border-white/20 hover:bg-[#0d0d0f]"
                 }`}
               >
@@ -1089,7 +1054,7 @@ function AvailabilityTab({ formData, setFormData }: TabProps) {
               onClick={() => handleDurationChange(preset.value)}
               className={`rounded-lg border px-3 py-3 text-center text-sm font-medium transition ${
                 formData.sessionDuration === preset.value && !formData.customDuration
-                  ? "border-cyan-500 bg-cyan-500/10 text-cyan-300"
+                  ? "border-green-500 bg-green-500/10 text-green-300"
                   : "border-white/10 bg-[#0a0a0c] text-white/60 hover:border-white/20 hover:bg-[#0d0d0f]"
               }`}
             >
@@ -1112,9 +1077,9 @@ function AvailabilityTab({ formData, setFormData }: TabProps) {
               placeholder="Custom"
               className={`h-full w-full rounded-lg border px-3 text-center text-sm outline-none transition ${
                 formData.customDuration
-                  ? "border-cyan-500 bg-cyan-500/10 text-cyan-300"
+                  ? "border-green-500 bg-green-500/10 text-green-300"
                   : "border-white/10 bg-[#0a0a0c] text-white/60 placeholder-white/40"
-              } focus:border-cyan-500 focus:bg-[#0d0d0f]`}
+              } focus:border-green-500 focus:bg-[#0d0d0f]`}
             />
           </div>
         </div>

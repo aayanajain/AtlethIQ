@@ -26,9 +26,6 @@ import { todayKey, computeStreak } from "@/src/lib/dates";
 // Which session types produce role-attribute ratings (the football ones).
 const RATED_TYPES: SessionType[] = ["match", "team", "solo"];
 
-// In development we allow multiple logs per day so it's easy to test.
-const DEV = process.env.NODE_ENV !== "production";
-
 // Shared dark input styling.
 const INPUT_DARK =
   "w-full rounded-lg border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-white " +
@@ -248,7 +245,7 @@ export default function TodaySessionPage() {
     );
   }
 
-  if (alreadyLogged && !DEV) {
+  if (alreadyLogged) {
     return (
       <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center p-6 text-center">
         <div className="text-4xl">✅</div>
