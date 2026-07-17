@@ -283,25 +283,45 @@ export default function GettingStartedPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] px-4 py-8">
+    <div className="min-h-screen bg-[#0a0f1a] px-4 py-8">
       <div className="mx-auto max-w-3xl">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-white">Welcome to AthletIQ</h1>
-          <p className="mt-2 text-white/60">Let&apos;s set up your profile</p>
+        {/* Header with Logo */}
+        <div className="mb-8 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-500">
+              <span className="text-sm font-bold text-black">A</span>
+            </div>
+            <span className="text-lg font-bold text-white">AthletIQ</span>
+          </div>
+          <div className="text-sm text-white/50">
+            Step {currentStep} of {TOTAL_STEPS}
+          </div>
         </div>
 
-        {/* Progress Bar */}
+        {/* Progress Stepper */}
         <div className="mb-8">
-          <div className="mb-2 flex items-center justify-between text-sm text-white/50">
-            <span>Step {currentStep} of {TOTAL_STEPS}</span>
-            <span>{Math.round((currentStep / TOTAL_STEPS) * 100)}%</span>
-          </div>
-          <div className="h-2 overflow-hidden rounded-full bg-white/10">
-            <div
-              className="h-full bg-teal-500 transition-all duration-300"
-              style={{ width: `${(currentStep / TOTAL_STEPS) * 100}%` }}
-            />
+          <div className="flex items-center justify-center gap-0">
+            {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map((step, index) => (
+              <div key={step} className="flex items-center">
+                <div
+                  className={`flex h-3 w-3 shrink-0 items-center justify-center rounded-full transition-all ${
+                    step < currentStep
+                      ? "bg-green-500"
+                      : step === currentStep
+                      ? "bg-green-500 ring-4 ring-green-500/20"
+                      : "bg-white/20"
+                  }`}
+                />
+                {index < TOTAL_STEPS - 1 && (
+                  <div
+                    className={`h-[2px] transition-all ${
+                      step < currentStep ? "bg-green-500" : "bg-white/10"
+                    }`}
+                    style={{ width: 'clamp(2rem, 8vw, 5rem)' }}
+                  />
+                )}
+              </div>
+            ))}
           </div>
         </div>
 
@@ -328,8 +348,9 @@ export default function GettingStartedPage() {
 
           {/* Error Message */}
           {error && (
-            <div className="mt-4 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-              {error}
+            <div className="mt-4 flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+              <span>⚠️</span>
+              <span>{error}</span>
             </div>
           )}
 
@@ -338,26 +359,27 @@ export default function GettingStartedPage() {
             <button
               onClick={handleBack}
               disabled={currentStep === 1}
-              className={btnGhost + " disabled:opacity-30"}
+              className={`rounded-lg border border-white/10 bg-[#0f1621] px-6 py-3 font-medium text-white/70 transition hover:border-white/20 hover:text-white disabled:opacity-30 disabled:hover:border-white/10 disabled:hover:text-white/70`}
             >
-              ← Back
+              Back
             </button>
 
             {currentStep < TOTAL_STEPS ? (
               <button
                 onClick={handleNext}
                 disabled={!validateStep(currentStep)}
-                className={btnPrimary + " disabled:opacity-50"}
+                className={`flex items-center gap-2 rounded-lg bg-teal-500 px-8 py-3 font-semibold text-black transition hover:bg-teal-400 disabled:opacity-40 disabled:hover:bg-teal-500`}
               >
-                Next →
+                Next
+                <span>→</span>
               </button>
             ) : (
               <button
                 onClick={handleSubmit}
                 disabled={submitting || !validateStep(5)}
-                className={btnPrimary + " disabled:opacity-50"}
+                className={`flex items-center gap-2 rounded-lg bg-teal-500 px-8 py-3 font-semibold text-black transition hover:bg-teal-400 disabled:opacity-40 disabled:hover:bg-teal-500`}
               >
-                {submitting ? "Creating Profile..." : "Create My Profile 🚀"}
+                {submitting ? "Creating..." : "Create Profile"}
               </button>
             )}
           </div>
@@ -384,67 +406,77 @@ function Step1Personal({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-white">Personal Information</h2>
-        <p className="mt-1 text-sm text-white/60">Tell us a bit about yourself</p>
+        <h2 className="text-2xl font-bold text-white">Personal Information</h2>
+        <p className="mt-1 text-sm text-white/50">Let's start with the basics.</p>
       </div>
 
       {/* Full Name */}
       <div>
-        <label className="mb-2 block text-sm font-medium text-white/80">
-          Full Name <span className="text-red-400">*</span>
+        <label className="mb-2 block text-sm font-medium text-white/70">
+          Full Name
         </label>
-        <input
-          type="text"
-          value={data.fullName}
-          onChange={(e) => setData({ ...data, fullName: e.target.value })}
-          placeholder="e.g. Sam Rivera"
-          className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3 text-white placeholder-white/30 outline-none focus:border-teal-500"
-          required
-        />
+        <div className="relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40">👤</span>
+          <input
+            type="text"
+            value={data.fullName}
+            onChange={(e) => setData({ ...data, fullName: e.target.value })}
+            placeholder="Enter your full name"
+            className="w-full rounded-lg border border-white/10 bg-[#0f1621] py-3 pl-10 pr-4 text-white placeholder-white/30 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
+            required
+          />
+        </div>
       </div>
 
-      {/* Date of Birth */}
-      <div>
-        <label className="mb-2 block text-sm font-medium text-white/80">
-          Date of Birth <span className="text-red-400">*</span>
-        </label>
-        <input
-          type="date"
-          value={data.dateOfBirth}
-          onChange={(e) => setData({ ...data, dateOfBirth: e.target.value })}
-          className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none focus:border-teal-500"
-          required
-        />
-        {age !== null && (
-          <p className={`mt-1 text-sm ${isValidAge ? "text-white/50" : "text-red-400"}`}>
-            {isValidAge
-              ? `Age: ${age} years old`
-              : `Age must be between 10-18 years (currently ${age})`}
-          </p>
-        )}
-      </div>
+      {/* Date of Birth & Gender Row */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        {/* Date of Birth */}
+        <div>
+          <label className="mb-2 block text-sm font-medium text-white/70">
+            Date of Birth
+          </label>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40">📅</span>
+            <input
+              type="date"
+              value={data.dateOfBirth}
+              onChange={(e) => setData({ ...data, dateOfBirth: e.target.value })}
+              placeholder="DD / MM / YYYY"
+              className="w-full rounded-lg border border-white/10 bg-[#0f1621] py-3 pl-10 pr-4 text-white outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
+              required
+            />
+          </div>
+          {age !== null && (
+            <p className={`mt-1.5 text-xs ${isValidAge ? "text-white/40" : "text-red-400"}`}>
+              {isValidAge
+                ? `${age} years old`
+                : `Age must be 10-18 (currently ${age})`}
+            </p>
+          )}
+        </div>
 
-      {/* Gender */}
-      <div>
-        <label className="mb-2 block text-sm font-medium text-white/80">
-          Gender <span className="text-red-400">*</span>
-        </label>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {GENDER_OPTIONS.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => setData({ ...data, gender: option.value })}
-              className={`rounded-lg border px-4 py-3 text-sm font-medium transition ${
-                data.gender === option.value
-                  ? "border-teal-500 bg-teal-500/10 text-teal-300"
-                  : "border-white/10 bg-white/[0.04] text-white/70 hover:border-white/20"
-              }`}
+        {/* Gender */}
+        <div>
+          <label className="mb-2 block text-sm font-medium text-white/70">
+            Gender
+          </label>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40">⚧</span>
+            <select
+              value={data.gender}
+              onChange={(e) => setData({ ...data, gender: e.target.value as Gender })}
+              className="w-full appearance-none rounded-lg border border-white/10 bg-[#0f1621] py-3 pl-10 pr-10 text-white outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
+              required
             >
-              <div className="mb-1 text-lg">{option.icon}</div>
-              {option.label}
-            </button>
-          ))}
+              <option value="" className="bg-[#0f1621] text-white/50">Select gender</option>
+              {GENDER_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value} className="bg-[#0f1621] text-white">
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white/40">▼</span>
+          </div>
         </div>
       </div>
     </div>
@@ -462,92 +494,194 @@ function Step2Football({
   data: OnboardingData;
   setData: React.Dispatch<React.SetStateAction<OnboardingData>>;
 }) {
+  // Icon components matching the reference design
+  const PositionIcon = ({ position, isSelected }: { position: string; isSelected: boolean }) => {
+    const iconClass = `${isSelected ? 'text-teal-400' : 'text-teal-400/60'}`;
+    
+    switch(position) {
+      case 'goalkeeper':
+        return (
+          <svg className={`h-7 w-7 ${iconClass}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M16 3H8C6.5 3 6 3.5 6 5v14c0 1.5.5 2 2 2h8c1.5 0 2-.5 2-2V5c0-1.5-.5-2-2-2z"/>
+            <line x1="6" y1="8" x2="18" y2="8"/>
+            <line x1="6" y1="13" x2="18" y2="13"/>
+            <line x1="6" y1="18" x2="18" y2="18"/>
+          </svg>
+        );
+      case 'centre-back':
+        return (
+          <svg className={`h-7 w-7 ${iconClass}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        );
+      case 'full-back':
+        return (
+          <svg className={`h-7 w-7 ${iconClass}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="M8 10l4 4 4-4"/>
+          </svg>
+        );
+      case 'defensive-mid':
+        return (
+          <svg className={`h-7 w-7 ${iconClass}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>
+            <path d="M5.64 5.64l2.83 2.83m7.07 7.07l2.83 2.83M5.64 18.36l2.83-2.83m7.07-7.07l2.83-2.83"/>
+          </svg>
+        );
+      case 'central-mid':
+        return (
+          <svg className={`h-7 w-7 ${iconClass}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+        );
+      case 'attacking-mid':
+        return (
+          <svg className={`h-7 w-7 ${iconClass}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="8" r="3"/>
+            <path d="M12 11v11"/>
+            <path d="M8 15l4 4 4-4"/>
+          </svg>
+        );
+      case 'winger':
+        return (
+          <svg className={`h-7 w-7 ${iconClass}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-5 3c-.4.2-.5.7-.4 1.1l.3.5c.2.4.6.6 1 .5L13 15l3.5 3.5c1.5 1.5 3.5 2 4.5 1.5.5-1 0-3-1.5-4.5L16 13l3.2 1.8z"/>
+          </svg>
+        );
+      case 'striker':
+        return (
+          <svg className={`h-7 w-7 ${iconClass}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+        );
+      default:
+        return <span className="text-2xl">⚽</span>;
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-white">Football Details</h2>
-        <p className="mt-1 text-sm text-white/60">Your playing style and experience</p>
+        <h2 className="text-2xl font-bold text-white">Football Details</h2>
+        <p className="mt-1 text-sm text-white/50">Tell us more about your game.</p>
       </div>
 
       {/* Position */}
       <div>
-        <label className="mb-2 block text-sm font-medium text-white/80">
-          Preferred Position <span className="text-red-400">*</span>
+        <label className="mb-3 block text-sm font-medium text-white/70">
+          Preferred Position
         </label>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {ROLES.map((role) => (
-            <button
-              key={role.slug}
-              type="button"
-              onClick={() => setData({ ...data, position: role.slug })}
-              className={`rounded-lg border px-4 py-3 text-sm font-medium transition ${
-                data.position === role.slug
-                  ? "border-teal-500 bg-teal-500/10 text-teal-300"
-                  : "border-white/10 bg-white/[0.04] text-white/70 hover:border-white/20"
-              }`}
-            >
-              {role.label}
-            </button>
-          ))}
+        <div className="grid grid-cols-4 gap-3">
+          {ROLES.map((role) => {
+            const isSelected = data.position === role.slug;
+            return (
+              <button
+                key={role.slug}
+                type="button"
+                onClick={() => setData({ ...data, position: role.slug })}
+                className={`relative flex flex-col items-center gap-3 rounded-lg border p-4 transition ${
+                  isSelected
+                    ? "border-teal-500 bg-teal-500/10"
+                    : "border-white/10 bg-[#0f1621] hover:border-teal-500/50"
+                }`}
+              >
+                <PositionIcon position={role.slug} isSelected={isSelected} />
+                <span className={`text-xs font-medium text-center ${
+                  isSelected ? "text-teal-300" : "text-white/70"
+                }`}>
+                  {role.label}
+                </span>
+                {isSelected && (
+                  <div className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-teal-500">
+                    <svg className="h-3 w-3 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                  </div>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Dominant Foot */}
-      <div>
-        <label className="mb-2 block text-sm font-medium text-white/80">
-          Dominant Foot <span className="text-red-400">*</span>
-        </label>
-        <div className="grid grid-cols-3 gap-3">
-          {DOMINANT_FOOT_OPTIONS.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => setData({ ...data, dominantFoot: option.value })}
-              className={`rounded-lg border px-4 py-4 text-center transition ${
-                data.dominantFoot === option.value
-                  ? "border-teal-500 bg-teal-500/10 text-teal-300"
-                  : "border-white/10 bg-white/[0.04] text-white/70 hover:border-white/20"
-              }`}
-            >
-              <div className="mb-1 text-xl">{option.icon}</div>
-              <div className="font-medium">{option.label}</div>
-              <div className="mt-1 text-xs text-white/40">{option.description}</div>
-            </button>
-          ))}
+      {/* Dominant Foot & Years Playing */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        {/* Dominant Foot */}
+        <div>
+          <label className="mb-3 block text-sm font-medium text-white/70">
+            Dominant Foot
+          </label>
+          <div className="grid grid-cols-3 gap-2">
+            {DOMINANT_FOOT_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setData({ ...data, dominantFoot: option.value })}
+                className={`rounded-xl border p-4 text-center transition ${
+                  data.dominantFoot === option.value
+                    ? "border-teal-500 bg-teal-500/10"
+                    : "border-white/10 bg-[#0f1621] hover:border-white/20"
+                }`}
+              >
+                <div className={`text-sm font-semibold ${
+                  data.dominantFoot === option.value ? "text-teal-300" : "text-white/70"
+                }`}>
+                  {option.label}
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* Years Playing */}
-      <div>
-        <label className="mb-2 block text-sm font-medium text-white/80">
-          Years of Playing <span className="text-red-400">*</span>
-        </label>
-        <input
-          type="number"
-          min="0"
-          max="15"
-          value={data.yearsPlaying}
-          onChange={(e) =>
-            setData({ ...data, yearsPlaying: parseInt(e.target.value) || 0 })
-          }
-          className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none focus:border-teal-500"
-          required
-        />
-        <p className="mt-1 text-xs text-white/40">How many years have you been playing football?</p>
+        {/* Years Playing */}
+        <div>
+          <label className="mb-3 block text-sm font-medium text-white/70">
+            Years of Playing
+          </label>
+          <div className="relative flex items-center gap-2">
+            <input
+              type="range"
+              min="0"
+              max="20"
+              value={data.yearsPlaying}
+              onChange={(e) =>
+                setData({ ...data, yearsPlaying: parseInt(e.target.value) || 0 })
+              }
+              className="flex-1 accent-teal-500"
+              style={{
+                background: `linear-gradient(to right, #14b8a6 0%, #14b8a6 ${(data.yearsPlaying / 20) * 100}%, rgba(255,255,255,0.1) ${(data.yearsPlaying / 20) * 100}%, rgba(255,255,255,0.1) 100%)`
+              }}
+            />
+            <div className="flex h-12 w-16 items-center justify-center rounded-lg border border-teal-500/30 bg-teal-500/10">
+              <span className="text-lg font-bold text-teal-300">{data.yearsPlaying}</span>
+            </div>
+          </div>
+          <div className="mt-2 flex justify-between text-xs text-white/40">
+            <span>0 years</span>
+            <span>20+ years</span>
+          </div>
+        </div>
       </div>
 
       {/* Current Club */}
       <div>
-        <label className="mb-2 block text-sm font-medium text-white/80">
-          Current Club or Team <span className="text-white/40">(Optional)</span>
+        <label className="mb-2 block text-sm font-medium text-white/70">
+          Current Club <span className="text-white/40">(Optional)</span>
         </label>
-        <input
-          type="text"
-          value={data.currentClub}
-          onChange={(e) => setData({ ...data, currentClub: e.target.value })}
-          placeholder="e.g. City Youth FC"
-          className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3 text-white placeholder-white/30 outline-none focus:border-teal-500"
-        />
+        <div className="relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40">⚽</span>
+          <input
+            type="text"
+            value={data.currentClub}
+            onChange={(e) => setData({ ...data, currentClub: e.target.value })}
+            placeholder="Enter your club name"
+            className="w-full rounded-lg border border-white/10 bg-[#0f1621] py-3 pl-10 pr-4 text-white placeholder-white/30 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
+          />
+        </div>
       </div>
     </div>
   );
@@ -564,17 +698,51 @@ function Step3Physical({
   data: OnboardingData;
   setData: React.Dispatch<React.SetStateAction<OnboardingData>>;
 }) {
+  // Fitness level icon components
+  const FitnessIcon = ({ level, isSelected }: { level: string; isSelected: boolean }) => {
+    const iconClass = `${isSelected ? 'text-teal-400' : 'text-teal-400/60'}`;
+    
+    switch(level) {
+      case 'beginner':
+        return (
+          <svg className={`h-8 w-8 ${iconClass}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 18v-6M7 18v-4M11 18v-2"/>
+          </svg>
+        );
+      case 'intermediate':
+        return (
+          <svg className={`h-8 w-8 ${iconClass}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 18v-8M7 18v-6M11 18v-4M15 18v-2"/>
+          </svg>
+        );
+      case 'advanced':
+        return (
+          <svg className={`h-8 w-8 ${iconClass}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+        );
+      case 'professional':
+        return (
+          <svg className={`h-8 w-8 ${iconClass}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+        );
+      default:
+        return <span className="text-2xl">📊</span>;
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-white">Physical Details</h2>
-        <p className="mt-1 text-sm text-white/60">Help us understand your physical profile</p>
+        <h2 className="text-2xl font-bold text-white">Physical Details</h2>
+        <p className="mt-1 text-sm text-white/50">Help us understand your physical profile</p>
       </div>
 
       {/* Height & Weight */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="mb-2 block text-sm font-medium text-white/80">
+          <label className="mb-2 block text-sm font-medium text-white/70">
             Height <span className="text-white/40">(cm)</span>
           </label>
           <input
@@ -584,11 +752,11 @@ function Step3Physical({
             value={data.height}
             onChange={(e) => setData({ ...data, height: e.target.value })}
             placeholder="e.g. 165"
-            className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3 text-white placeholder-white/30 outline-none focus:border-teal-500"
+            className="w-full rounded-lg border border-white/10 bg-[#0f1621] px-4 py-3 text-white placeholder-white/30 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
           />
         </div>
         <div>
-          <label className="mb-2 block text-sm font-medium text-white/80">
+          <label className="mb-2 block text-sm font-medium text-white/70">
             Weight <span className="text-white/40">(kg)</span>
           </label>
           <input
@@ -598,33 +766,47 @@ function Step3Physical({
             value={data.weight}
             onChange={(e) => setData({ ...data, weight: e.target.value })}
             placeholder="e.g. 55"
-            className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3 text-white placeholder-white/30 outline-none focus:border-teal-500"
+            className="w-full rounded-lg border border-white/10 bg-[#0f1621] px-4 py-3 text-white placeholder-white/30 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
           />
         </div>
       </div>
 
       {/* Fitness Level */}
       <div>
-        <label className="mb-2 block text-sm font-medium text-white/80">
-          Fitness Level <span className="text-red-400">*</span>
+        <label className="mb-3 block text-sm font-medium text-white/70">
+          Fitness Level
         </label>
-        <div className="grid gap-3 sm:grid-cols-3">
-          {FITNESS_LEVELS.map((level) => (
-            <button
-              key={level.value}
-              type="button"
-              onClick={() => setData({ ...data, fitnessLevel: level.value })}
-              className={`rounded-lg border px-4 py-4 text-center transition ${
-                data.fitnessLevel === level.value
-                  ? "border-teal-500 bg-teal-500/10 text-teal-300"
-                  : "border-white/10 bg-white/[0.04] text-white/70 hover:border-white/20"
-              }`}
-            >
-              <div className="mb-2 text-2xl">{level.icon}</div>
-              <div className="font-semibold">{level.label}</div>
-              <div className="mt-1 text-xs text-white/40">{level.description}</div>
-            </button>
-          ))}
+        <div className="grid gap-3 sm:grid-cols-4">
+          {FITNESS_LEVELS.map((level) => {
+            const isSelected = data.fitnessLevel === level.value;
+            return (
+              <button
+                key={level.value}
+                type="button"
+                onClick={() => setData({ ...data, fitnessLevel: level.value })}
+                className={`relative flex flex-col items-center gap-3 rounded-lg border p-4 text-center transition ${
+                  isSelected
+                    ? "border-teal-500 bg-teal-500/10"
+                    : "border-white/10 bg-[#0f1621] hover:border-teal-500/50"
+                }`}
+              >
+                <FitnessIcon level={level.value} isSelected={isSelected} />
+                <div className={`font-semibold text-sm ${
+                  isSelected ? "text-teal-300" : "text-white/80"
+                }`}>
+                  {level.label}
+                </div>
+                <div className="text-xs text-white/40">{level.description}</div>
+                {isSelected && (
+                  <div className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-teal-500">
+                    <svg className="h-3 w-3 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                  </div>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>
@@ -671,9 +853,9 @@ function Step4Goals({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-white">Your Goals</h2>
-        <p className="mt-1 text-sm text-white/60">
-          What do you want to achieve? <span className="text-red-400">*</span>
+        <h2 className="text-2xl font-bold text-white">Your Goals</h2>
+        <p className="mt-1 text-sm text-white/50">
+          What do you want to achieve? (Select all that apply)
         </p>
       </div>
 
@@ -686,19 +868,29 @@ function Step4Goals({
               key={goal.id}
               type="button"
               onClick={() => toggleGoal(goal.id)}
-              className={`rounded-lg border px-4 py-4 text-left transition ${
+              className={`group relative overflow-hidden rounded-xl border p-4 text-left transition ${
                 isSelected
-                  ? "border-teal-500 bg-teal-500/10 text-teal-300"
-                  : "border-white/10 bg-white/[0.04] text-white/70 hover:border-white/20"
+                  ? "border-teal-500 bg-teal-500/10"
+                  : "border-white/10 bg-[#0f1621] hover:border-white/20"
               }`}
             >
               <div className="flex items-start gap-3">
-                <span className="text-xl">{goal.icon}</span>
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition ${
+                  isSelected ? "bg-teal-500/20" : "bg-[#1a2332]"
+                }`}>
+                  <span className="text-xl">{goal.icon}</span>
+                </div>
                 <div className="flex-1">
-                  <div className="font-semibold">{goal.label}</div>
+                  <div className={`font-semibold ${isSelected ? "text-teal-300" : "text-white/90"}`}>
+                    {goal.label}
+                  </div>
                   <div className="mt-1 text-xs text-white/40">{goal.description}</div>
                 </div>
-                {isSelected && <span className="text-teal-400">✓</span>}
+                {isSelected && (
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal-500">
+                    <span className="text-xs text-black">✓</span>
+                  </div>
+                )}
               </div>
             </button>
           );
@@ -707,7 +899,7 @@ function Step4Goals({
 
       {/* Custom Goal Input */}
       <div>
-        <label className="mb-2 block text-sm font-medium text-white/80">
+        <label className="mb-2 block text-sm font-medium text-white/70">
           Add Your Own Goal
         </label>
         <div className="flex gap-2">
@@ -717,46 +909,25 @@ function Step4Goals({
             onChange={(e) => setData({ ...data, customGoal: e.target.value })}
             onKeyPress={(e) => e.key === "Enter" && addCustomGoal()}
             placeholder="e.g. Play in a higher division"
-            className="flex-1 rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3 text-white placeholder-white/30 outline-none focus:border-teal-500"
+            className="flex-1 rounded-lg border border-white/10 bg-[#0f1621] px-4 py-3 text-white placeholder-white/30 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
           />
           <button
             type="button"
             onClick={addCustomGoal}
             disabled={!data.customGoal.trim()}
-            className={btnPrimary + " disabled:opacity-50"}
+            className={`shrink-0 rounded-lg bg-teal-500 px-6 py-3 font-medium text-black transition hover:bg-teal-400 disabled:opacity-40 disabled:hover:bg-teal-500`}
           >
             Add
           </button>
         </div>
       </div>
 
-      {/* Selected Goals */}
+      {/* Selected Goals Count */}
       {data.goals.length > 0 && (
-        <div>
-          <label className="mb-2 block text-sm font-medium text-white/80">
-            Selected Goals ({data.goals.length})
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {data.goals.map((goal) => {
-              const predefined = PREDEFINED_GOALS.find((g) => g.id === goal);
-              const label = predefined?.label || goal;
-              return (
-                <span
-                  key={goal}
-                  className="inline-flex items-center gap-2 rounded-full border border-teal-500/30 bg-teal-500/10 px-3 py-1 text-sm text-teal-300"
-                >
-                  {label}
-                  <button
-                    type="button"
-                    onClick={() => removeGoal(goal)}
-                    className="text-teal-400 hover:text-teal-300"
-                  >
-                    ×
-                  </button>
-                </span>
-              );
-            })}
-          </div>
+        <div className="rounded-lg border border-teal-500/30 bg-teal-500/5 p-3 text-center">
+          <span className="text-sm text-teal-300">
+            ✓ {data.goals.length} goal{data.goals.length !== 1 ? "s" : ""} selected
+          </span>
         </div>
       )}
     </div>
@@ -790,14 +961,14 @@ function Step5Availability({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-white">Availability</h2>
-        <p className="mt-1 text-sm text-white/60">When can you train?</p>
+        <h2 className="text-2xl font-bold text-white">Availability</h2>
+        <p className="mt-1 text-sm text-white/50">When can you train?</p>
       </div>
 
       {/* Training Days */}
       <div>
-        <label className="mb-2 block text-sm font-medium text-white/80">
-          Training Days <span className="text-red-400">*</span>
+        <label className="mb-3 block text-sm font-medium text-white/70">
+          Training Days
         </label>
         <div className="grid grid-cols-7 gap-2">
           {TRAINING_DAYS_OPTIONS.map((day) => {
@@ -807,10 +978,10 @@ function Step5Availability({
                 key={day.value}
                 type="button"
                 onClick={() => toggleDay(day.value)}
-                className={`rounded-lg border px-3 py-3 text-center text-xs font-semibold transition ${
+                className={`rounded-lg border py-3 text-center text-xs font-semibold transition ${
                   isSelected
-                    ? "border-teal-500 bg-teal-500/10 text-teal-300"
-                    : "border-white/10 bg-white/[0.04] text-white/70 hover:border-white/20"
+                    ? "border-teal-500 bg-teal-500 text-black"
+                    : "border-white/10 bg-[#0f1621] text-white/50 hover:border-white/20"
                 }`}
               >
                 {day.shortLabel}
@@ -818,15 +989,40 @@ function Step5Availability({
             );
           })}
         </div>
-        <p className="mt-2 text-xs text-white/40">
-          Selected: {data.trainingDays.length} day{data.trainingDays.length !== 1 ? "s" : ""}
-        </p>
+        {data.trainingDays.length > 0 && (
+          <p className="mt-2 text-xs text-white/40">
+            {data.trainingDays.length} day{data.trainingDays.length !== 1 ? "s" : ""} selected
+          </p>
+        )}
       </div>
 
-      {/* Preferred Time */}
+      {/* Training Duration */}
       <div>
-        <label className="mb-2 block text-sm font-medium text-white/80">
-          Preferred Time <span className="text-red-400">*</span>
+        <label className="mb-3 block text-sm font-medium text-white/70">
+          Training Duration
+        </label>
+        <div className="grid grid-cols-5 gap-2">
+          {SESSION_DURATION_PRESETS.map((preset) => (
+            <button
+              key={preset.value}
+              type="button"
+              onClick={() => handleDurationChange(preset.value)}
+              className={`rounded-lg border py-3 text-center text-sm font-medium transition ${
+                data.sessionDuration === preset.value && !data.customDuration
+                  ? "border-teal-500 bg-teal-500/10 text-teal-300"
+                  : "border-white/10 bg-[#0f1621] text-white/70 hover:border-white/20"
+              }`}
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Preferred Training Time */}
+      <div>
+        <label className="mb-3 block text-sm font-medium text-white/70">
+          Preferred Training Time
         </label>
         <div className="grid gap-3 sm:grid-cols-3">
           {PREFERRED_TIME_OPTIONS.map((time) => (
@@ -834,63 +1030,22 @@ function Step5Availability({
               key={time.value}
               type="button"
               onClick={() => setData({ ...data, preferredTime: time.value })}
-              className={`rounded-lg border px-4 py-4 text-center transition ${
+              className={`rounded-xl border p-4 text-center transition ${
                 data.preferredTime === time.value
-                  ? "border-teal-500 bg-teal-500/10 text-teal-300"
-                  : "border-white/10 bg-white/[0.04] text-white/70 hover:border-white/20"
+                  ? "border-teal-500 bg-teal-500/10"
+                  : "border-white/10 bg-[#0f1621] hover:border-white/20"
               }`}
             >
-              <div className="mb-1 text-xl">{time.icon}</div>
-              <div className="font-semibold">{time.label}</div>
+              <div className="mb-2 text-2xl">{time.icon}</div>
+              <div className={`font-semibold ${
+                data.preferredTime === time.value ? "text-teal-300" : "text-white/80"
+              }`}>
+                {time.label}
+              </div>
               <div className="mt-1 text-xs text-white/40">{time.timeRange}</div>
             </button>
           ))}
         </div>
-      </div>
-
-      {/* Session Duration */}
-      <div>
-        <label className="mb-2 block text-sm font-medium text-white/80">
-          Session Duration <span className="text-red-400">*</span>
-        </label>
-        <div className="grid grid-cols-4 gap-3 sm:grid-cols-5">
-          {SESSION_DURATION_PRESETS.map((preset) => (
-            <button
-              key={preset.value}
-              type="button"
-              onClick={() => handleDurationChange(preset.value)}
-              className={`rounded-lg border px-4 py-3 text-center text-sm font-medium transition ${
-                data.sessionDuration === preset.value && !data.customDuration
-                  ? "border-teal-500 bg-teal-500/10 text-teal-300"
-                  : "border-white/10 bg-white/[0.04] text-white/70 hover:border-white/20"
-              }`}
-            >
-              {preset.label}
-            </button>
-          ))}
-          <div className="relative">
-            <input
-              type="number"
-              min="15"
-              max="300"
-              value={data.customDuration}
-              onChange={(e) =>
-                setData({
-                  ...data,
-                  customDuration: e.target.value,
-                  sessionDuration: 0,
-                })
-              }
-              placeholder="Custom"
-              className={`h-full w-full rounded-lg border px-3 text-center text-sm outline-none ${
-                data.customDuration
-                  ? "border-teal-500 bg-teal-500/10 text-teal-300"
-                  : "border-white/10 bg-white/[0.04] text-white/70 placeholder-white/40"
-              } focus:border-teal-500`}
-            />
-          </div>
-        </div>
-        <p className="mt-2 text-xs text-white/40">How long do your typical training sessions last?</p>
       </div>
     </div>
   );
