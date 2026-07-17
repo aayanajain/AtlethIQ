@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import type { Variants } from "framer-motion";
 
@@ -24,59 +25,28 @@ const cardVariants: Variants = {
   }),
 };
 
-/* ─── Icons ──────────────────────────────────────────────────────── */
-function IconMessage() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.6"
-      strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-      <path d="M8 10h8M8 14h5" />
-    </svg>
-  );
-}
-
-function IconActivity() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.6"
-      strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
-      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-    </svg>
-  );
-}
-
-function IconUsers() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.6"
-      strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  );
-}
-
 /* ─── Card Data ──────────────────────────────────────────────────── */
+// Image paths are URL-encoded because the files have spaces in their names.
 const CARDS = [
   {
     num: "01",
-    icon: <IconMessage />,
-    title: "Describe Your Problem",
-    desc: "Tell AthletIQ about your match, training session, or challenge. The AI analyzes weaknesses in shooting, passing, stamina, positioning, ball control, and decision making.",
+    image: "/home%205.jpg",
+    title: "Describe Your Session",
+    desc: "Tell AthletIQ about your match or training in plain words. The AI reads your game and pinpoints where to improve — finishing, passing, stamina, control.",
     link: "Get Started",
   },
   {
     num: "02",
-    icon: <IconActivity />,
+    image: "/home%204.jpg",
     title: "Stats & Performance Tracking",
-    desc: "Track your progress after every training session. Visualize match analytics, heat maps, sprint speed, passing accuracy, stamina trends, and AI-generated performance insights.",
+    desc: "Watch your progress after every session — development curves, position-aware metrics, and AI-generated insights that show exactly how you’re growing.",
     link: "See Your Stats",
   },
   {
     num: "03",
-    icon: <IconUsers />,
+    image: "/home%203.png",
     title: "Live Coach Interaction",
-    desc: "Connect with certified football coaches through live sessions, receive personalized feedback, weekly training plans, and tactical guidance to accelerate your improvement.",
+    desc: "Your coach sets a focus and sees every player at a glance. The AI reconciles their guidance with your real sessions, so you both stay on the same page.",
     link: "Find a Coach",
   },
 ];
@@ -96,72 +66,44 @@ function FeatureCard({
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: "-60px" }}
-      whileHover={{
-        y: -8,
-        transition: { duration: 0.3, ease: "easeOut" },
-      }}
-      className="group relative flex flex-col flex-1 min-w-0 rounded-[20px] p-8"
-      style={{
-        background: "rgba(15,15,15,0.72)",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
-        border: "1px solid rgba(255,255,255,0.08)",
-        minHeight: "340px",
-        transition: "border-color 300ms ease, box-shadow 300ms ease",
-      }}
-      onMouseEnter={(e) => {
-        const el = e.currentTarget as HTMLDivElement;
-        el.style.borderColor = "rgba(20,184,166,0.35)";
-        el.style.boxShadow = "0 0 40px rgba(20,184,166,0.08), 0 20px 48px rgba(0,0,0,0.5)";
-      }}
-      onMouseLeave={(e) => {
-        const el = e.currentTarget as HTMLDivElement;
-        el.style.borderColor = "rgba(255,255,255,0.08)";
-        el.style.boxShadow = "none";
-      }}
+      whileHover={{ y: -8, transition: { duration: 0.3, ease: "easeOut" } }}
+      className="group relative flex min-h-[440px] flex-1 flex-col justify-end overflow-hidden rounded-[20px] border border-white/[0.08] transition-[border-color,box-shadow] duration-300 hover:border-teal-500/35 hover:shadow-[0_0_44px_rgba(20,184,166,0.12),0_24px_48px_rgba(0,0,0,0.5)]"
     >
-      {/* Number */}
-      <p className="text-xs font-semibold tracking-widest mb-5"
-        style={{ color: "rgba(255,255,255,0.2)" }}>
-        {card.num}
-      </p>
+      {/* Background image */}
+      <Image
+        src={card.image}
+        alt={card.title}
+        fill
+        sizes="(max-width: 768px) 100vw, 33vw"
+        className="object-cover transition-transform duration-[700ms] ease-out group-hover:scale-[1.06]"
+      />
 
-      {/* Icon box */}
-      <motion.div
-        className="w-11 h-11 rounded-xl flex items-center justify-center mb-7 flex-shrink-0"
+      {/* Gradient scrim for legibility */}
+      <div
+        className="absolute inset-0"
         style={{
-          background: "rgba(20,184,166,0.08)",
-          border: "1px solid rgba(20,184,166,0.18)",
+          background:
+            "linear-gradient(to top, rgba(5,5,5,0.96) 0%, rgba(5,5,5,0.82) 30%, rgba(5,5,5,0.28) 62%, rgba(5,5,5,0.08) 100%)",
         }}
-        whileHover={{ scale: 1.12 }}
-        transition={{ duration: 0.2 }}
-      >
-        {card.icon}
-      </motion.div>
+      />
 
-      {/* Title */}
-      <h3 className="text-white font-bold text-lg leading-snug tracking-tight mb-4">
-        {card.title}
-      </h3>
+      {/* Content */}
+      <div className="relative z-10 p-7">
+        <h3 className="mb-3 text-xl font-bold leading-snug tracking-tight text-white">
+          {card.title}
+        </h3>
+        <p className="text-sm leading-relaxed text-white/70">{card.desc}</p>
 
-      {/* Description */}
-      <p className="text-sm leading-relaxed flex-1"
-        style={{ color: "#A1A1AA" }}>
-        {card.desc}
-      </p>
-
-      {/* Link */}
-      <a
-        href="#"
-        className="inline-flex items-center gap-1.5 mt-7 text-sm font-semibold transition-colors duration-200 hover:opacity-80"
-        style={{ color: "#14B8A6" }}
-      >
-        {card.link}
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2"
-          strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5">
-          <path d="M3 8h10M9 4l4 4-4 4" />
-        </svg>
-      </a>
+        <a
+          href="#"
+          className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-teal-400 transition-colors duration-200 hover:text-teal-300"
+        >
+          {card.link}
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5">
+            <path d="M3 8h10M9 4l4 4-4 4" />
+          </svg>
+        </a>
+      </div>
     </motion.div>
   );
 }
@@ -171,16 +113,12 @@ export default function FeaturesSection() {
   return (
     <section
       className="relative w-full"
-      style={{
-        background: "#050505",
-        paddingTop: "140px",
-        paddingBottom: "140px",
-      }}
+      style={{ background: "#050505", paddingTop: "140px", paddingBottom: "96px" }}
       aria-labelledby="features-heading"
     >
       {/* Ambient teal glow */}
       <div
-        className="absolute pointer-events-none"
+        className="pointer-events-none absolute"
         style={{
           top: "0",
           left: "50%",
@@ -191,7 +129,7 @@ export default function FeaturesSection() {
         }}
       />
       <div
-        className="absolute pointer-events-none"
+        className="pointer-events-none absolute"
         style={{
           top: "-80px",
           left: "50%",
@@ -203,37 +141,30 @@ export default function FeaturesSection() {
         }}
       />
 
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-12">
-
+      <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
         {/* ── Header ── */}
         <motion.div
           variants={sectionVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-80px" }}
-          className="text-center mb-16"
+          className="mb-16 text-center"
         >
           <h2
             id="features-heading"
-            className="font-extrabold text-white mx-auto"
-            style={{
-              fontSize: "clamp(2rem, 4vw, 3.5rem)",
-              lineHeight: 1.15,
-              letterSpacing: "-0.02em",
-              maxWidth: "700px",
-            }}
+            className="mx-auto whitespace-nowrap font-extrabold text-white"
+            style={{ fontSize: "clamp(1.35rem, 4.4vw, 3.5rem)", lineHeight: 1.15, letterSpacing: "-0.02em" }}
           >
-            Everything You Need To Improve
+            Everything You Need To <span className="text-[#22c55e]">Improve</span>
           </h2>
         </motion.div>
 
         {/* ── Cards ── */}
-        <div className="flex flex-col md:flex-row gap-5">
+        <div className="flex flex-col gap-5 md:flex-row">
           {CARDS.map((card, i) => (
             <FeatureCard key={card.num} card={card} index={i} />
           ))}
         </div>
-
       </div>
     </section>
   );

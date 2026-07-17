@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -20,6 +20,15 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Preselect the toggle from ?role=coach|player (e.g. the "coach view" CTA on
+  // the landing page links here with the coach tab already active).
+  useEffect(() => {
+    const roleParam = new URLSearchParams(window.location.search).get("role");
+    if (roleParam === "coach" || roleParam === "player") {
+      setRole(roleParam);
+    }
+  }, []);
 
   async function handlePlayerLogin(e: React.FormEvent) {
     e.preventDefault();
