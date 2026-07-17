@@ -41,7 +41,7 @@ const PLAYER = {
 
 const COACH = {
   eyebrow: "For coaches",
-  accent: "#22c55e",
+  accent: "#f59e0b",
   title: "Every player tracked, without the workload",
   desc: "See a whole squad at a glance and know exactly who needs you this week.",
   points: [
