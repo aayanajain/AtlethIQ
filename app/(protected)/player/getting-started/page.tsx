@@ -724,13 +724,13 @@ function Step2Football({
                   onClick={() => setData({ ...data, position: role.slug })}
                   className={`relative flex flex-col items-center gap-2.5 rounded-xl border p-4 transition ${
                     isSelected
-                      ? "border-teal-500 bg-teal-500/10"
-                      : "border-white/10 bg-[#141519] hover:border-teal-500/40 hover:bg-white/[0.03]"
+                      ? "border-emerald-500 bg-emerald-500/10"
+                      : "border-white/10 bg-[#141519] hover:border-emerald-500/40 hover:bg-white/[0.03]"
                   }`}
                 >
                   <span
                     className={`flex h-11 items-center justify-center transition ${
-                      isSelected ? "text-teal-300" : "text-white/60"
+                      isSelected ? "text-emerald-300" : "text-emerald-400/70"
                     }`}
                   >
                     {num ? (
@@ -741,13 +741,13 @@ function Step2Football({
                   </span>
                   <span
                     className={`text-center text-[11px] font-medium leading-tight ${
-                      isSelected ? "text-teal-200" : "text-white/60"
+                      isSelected ? "text-emerald-200" : "text-white/60"
                     }`}
                   >
                     {role.label.replace(/\s*\(.*\)/, "")}
                   </span>
                   {isSelected && (
-                    <span className="absolute right-2 top-2 flex h-4 w-4 items-center justify-center rounded-full bg-teal-500">
+                    <span className="absolute right-2 top-2 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500">
                       <CheckIcon className="h-2.5 w-2.5 text-black" />
                     </span>
                   )}
@@ -772,8 +772,8 @@ function Step2Football({
                     onClick={() => setData({ ...data, dominantFoot: option.value })}
                     className={`rounded-xl border p-4 text-center text-sm font-semibold transition ${
                       isSelected
-                        ? "border-teal-500 bg-teal-500/10 text-teal-200"
-                        : "border-white/10 bg-[#141519] text-white/70 hover:border-white/20"
+                        ? "border-emerald-500 bg-emerald-500/10 text-emerald-200"
+                        : "border-white/10 bg-[#141519] text-white/70 hover:border-emerald-500/40"
                     }`}
                   >
                     {option.label}
@@ -795,17 +795,17 @@ function Step2Football({
                 onChange={(e) =>
                   setData({ ...data, yearsPlaying: parseInt(e.target.value) || 0 })
                 }
-                className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full accent-teal-500"
+                className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full accent-emerald-500"
                 style={{
-                  background: `linear-gradient(to right, #14b8a6 0%, #14b8a6 ${
+                  background: `linear-gradient(to right, #10b981 0%, #10b981 ${
                     (data.yearsPlaying / 20) * 100
                   }%, rgba(255,255,255,0.08) ${
                     (data.yearsPlaying / 20) * 100
                   }%, rgba(255,255,255,0.08) 100%)`,
                 }}
               />
-              <div className="flex h-12 w-14 shrink-0 items-center justify-center rounded-xl border border-teal-500/30 bg-teal-500/10">
-                <span className="text-lg font-bold text-teal-300">{data.yearsPlaying}</span>
+              <div className="flex h-12 w-14 shrink-0 items-center justify-center rounded-xl border border-emerald-500/30 bg-emerald-500/10">
+                <span className="text-lg font-bold text-emerald-300">{data.yearsPlaying}</span>
               </div>
             </div>
             <div className="mt-2 flex justify-between text-[11px] text-white/35">
@@ -894,36 +894,72 @@ function Step3Physical({
             {FITNESS_LEVELS.map((level) => {
               const isSelected = data.fitnessLevel === level.value;
               const Icon = FITNESS_ICONS[level.value] ?? SparkleIcon;
+              
+              // Color scheme per fitness level
+              const colorScheme = {
+                beginner: {
+                  border: isSelected ? "border-blue-500" : "border-white/10",
+                  bg: isSelected ? "bg-blue-500/10" : "bg-[#141519]",
+                  hover: "hover:border-blue-500/40 hover:bg-white/[0.03]",
+                  iconBorder: isSelected ? "border-blue-400/40" : "border-white/10",
+                  iconBg: isSelected ? "bg-blue-500/15" : "bg-white/[0.03]",
+                  iconColor: isSelected ? "text-blue-300" : "text-blue-400/70",
+                  textColor: isSelected ? "text-blue-200" : "text-white/80",
+                  checkBg: "bg-blue-500",
+                },
+                intermediate: {
+                  border: isSelected ? "border-purple-500" : "border-white/10",
+                  bg: isSelected ? "bg-purple-500/10" : "bg-[#141519]",
+                  hover: "hover:border-purple-500/40 hover:bg-white/[0.03]",
+                  iconBorder: isSelected ? "border-purple-400/40" : "border-white/10",
+                  iconBg: isSelected ? "bg-purple-500/15" : "bg-white/[0.03]",
+                  iconColor: isSelected ? "text-purple-300" : "text-purple-400/70",
+                  textColor: isSelected ? "text-purple-200" : "text-white/80",
+                  checkBg: "bg-purple-500",
+                },
+                advanced: {
+                  border: isSelected ? "border-orange-500" : "border-white/10",
+                  bg: isSelected ? "bg-orange-500/10" : "bg-[#141519]",
+                  hover: "hover:border-orange-500/40 hover:bg-white/[0.03]",
+                  iconBorder: isSelected ? "border-orange-400/40" : "border-white/10",
+                  iconBg: isSelected ? "bg-orange-500/15" : "bg-white/[0.03]",
+                  iconColor: isSelected ? "text-orange-300" : "text-orange-400/70",
+                  textColor: isSelected ? "text-orange-200" : "text-white/80",
+                  checkBg: "bg-orange-500",
+                },
+              }[level.value] || {
+                border: isSelected ? "border-teal-500" : "border-white/10",
+                bg: isSelected ? "bg-teal-500/10" : "bg-[#141519]",
+                hover: "hover:border-teal-500/40 hover:bg-white/[0.03]",
+                iconBorder: isSelected ? "border-teal-400/40" : "border-white/10",
+                iconBg: isSelected ? "bg-teal-500/15" : "bg-white/[0.03]",
+                iconColor: isSelected ? "text-teal-300" : "text-white/45",
+                textColor: isSelected ? "text-teal-200" : "text-white/80",
+                checkBg: "bg-teal-500",
+              };
+              
               return (
                 <button
                   key={level.value}
                   type="button"
                   onClick={() => setData({ ...data, fitnessLevel: level.value })}
                   className={`relative flex flex-col items-center gap-3 rounded-xl border p-5 text-center transition ${
-                    isSelected
-                      ? "border-teal-500 bg-teal-500/10"
-                      : "border-white/10 bg-[#141519] hover:border-teal-500/40 hover:bg-white/[0.03]"
-                  }`}
+                    colorScheme.border
+                  } ${colorScheme.bg} ${!isSelected ? colorScheme.hover : ""}`}
                 >
                   <span
                     className={`flex h-12 w-12 items-center justify-center rounded-xl border transition ${
-                      isSelected
-                        ? "border-teal-400/40 bg-teal-500/15 text-teal-300"
-                        : "border-white/10 bg-white/[0.03] text-white/45"
-                    }`}
+                      colorScheme.iconBorder
+                    } ${colorScheme.iconBg}`}
                   >
-                    <Icon className="h-6 w-6" />
+                    <Icon className={`h-6 w-6 ${colorScheme.iconColor}`} />
                   </span>
-                  <div
-                    className={`text-sm font-semibold ${
-                      isSelected ? "text-teal-200" : "text-white/80"
-                    }`}
-                  >
+                  <div className={`text-sm font-semibold ${colorScheme.textColor}`}>
                     {level.label}
                   </div>
                   <div className="text-xs leading-relaxed text-white/40">{level.description}</div>
                   {isSelected && (
-                    <span className="absolute right-2.5 top-2.5 flex h-5 w-5 items-center justify-center rounded-full bg-teal-500">
+                    <span className={`absolute right-2.5 top-2.5 flex h-5 w-5 items-center justify-center rounded-full ${colorScheme.checkBg}`}>
                       <CheckIcon className="h-3 w-3 text-black" />
                     </span>
                   )}
@@ -1149,7 +1185,7 @@ function Step5Availability({
                       : "border-white/10 bg-[#141519] hover:border-white/20"
                   }`}
                 >
-                  <Icon className={`h-7 w-7 ${isSelected ? "text-teal-300" : "text-white/45"}`} />
+                  <Icon className="h-7 w-7 text-yellow-400" />
                   <div
                     className={`text-sm font-semibold ${
                       isSelected ? "text-teal-200" : "text-white/80"
@@ -1202,14 +1238,26 @@ function Step6Review({
 
       <div className="space-y-4">
         {/* Personal Information */}
-        <ReviewSection title="Personal Information" onEdit={() => onEdit(1)}>
+        <ReviewSection 
+          title="Personal Information" 
+          icon={UserIcon}
+          iconColor="text-teal-400"
+          borderColor="border-l-teal-500"
+          onEdit={() => onEdit(1)}
+        >
           <ReviewItem label="Full Name" value={data.fullName} />
           <ReviewItem label="Date of Birth" value={`${data.dateOfBirth} · ${age} yrs`} />
           <ReviewItem label="Gender" value={genderLabel} />
         </ReviewSection>
 
         {/* Football Details */}
-        <ReviewSection title="Football Details" onEdit={() => onEdit(2)}>
+        <ReviewSection 
+          title="Football Details" 
+          icon={ShieldIcon}
+          iconColor="text-emerald-400"
+          borderColor="border-l-emerald-500"
+          onEdit={() => onEdit(2)}
+        >
           <ReviewItem label="Position" value={positionLabel} />
           <ReviewItem label="Dominant Foot" value={footLabel} />
           <ReviewItem label="Years Playing" value={`${data.yearsPlaying} years`} />
@@ -1217,14 +1265,26 @@ function Step6Review({
         </ReviewSection>
 
         {/* Physical Details */}
-        <ReviewSection title="Physical Details" onEdit={() => onEdit(3)}>
+        <ReviewSection 
+          title="Physical Details" 
+          icon={DumbbellIcon}
+          iconColor="text-purple-400"
+          borderColor="border-l-purple-500"
+          onEdit={() => onEdit(3)}
+        >
           <ReviewItem label="Height" value={data.height ? `${data.height} cm` : "Not specified"} />
           <ReviewItem label="Weight" value={data.weight ? `${data.weight} kg` : "Not specified"} />
           <ReviewItem label="Fitness Level" value={fitnessLabel} />
         </ReviewSection>
 
         {/* Goals */}
-        <ReviewSection title="Goals" onEdit={() => onEdit(4)}>
+        <ReviewSection 
+          title="Goals" 
+          icon={TargetIcon}
+          iconColor="text-blue-400"
+          borderColor="border-l-blue-500"
+          onEdit={() => onEdit(4)}
+        >
           <div className="flex flex-wrap gap-2">
             {data.goals.map((goal) => {
               const label = PREDEFINED_GOALS.find((g) => g.id === goal)?.label || goal;
@@ -1241,7 +1301,13 @@ function Step6Review({
         </ReviewSection>
 
         {/* Availability */}
-        <ReviewSection title="Availability" onEdit={() => onEdit(5)}>
+        <ReviewSection 
+          title="Availability" 
+          icon={CalendarIcon}
+          iconColor="text-yellow-400"
+          borderColor="border-l-yellow-500"
+          onEdit={() => onEdit(5)}
+        >
           <ReviewItem
             label="Training Days"
             value={data.trainingDays
@@ -1258,17 +1324,30 @@ function Step6Review({
 
 function ReviewSection({
   title,
+  icon: Icon,
+  iconColor,
+  borderColor,
   onEdit,
   children,
 }: {
   title: string;
+  icon?: IconCmp;
+  iconColor?: string;
+  borderColor?: string;
   onEdit: () => void;
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4">
+    <div className={`relative overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.02] p-4 pl-5 ${borderColor ? `border-l-4 ${borderColor}` : ""}`}>
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-white/70">{title}</h3>
+        <div className="flex items-center gap-3">
+          {Icon && (
+            <div className={`flex h-8 w-8 items-center justify-center rounded-lg bg-white/[0.03] ${iconColor || "text-white/50"}`}>
+              <Icon className="h-4 w-4" />
+            </div>
+          )}
+          <h3 className="text-xs font-bold uppercase tracking-wider text-white/70">{title}</h3>
+        </div>
         <button
           type="button"
           onClick={onEdit}
