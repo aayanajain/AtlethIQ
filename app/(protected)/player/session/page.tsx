@@ -66,10 +66,26 @@ export default function TodaySessionPage() {
 
   useEffect(() => {
     async function load() {
-      const { data: mine } = await supabase.from("players").select("*").limit(1).maybeSingle();
+      // Scope to the logged-in user (RLS already restricts rows to them, but
+      // querying by id explicitly is clearer and robust to policy changes).
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+      const { data: mine } = await supabase
+        .from("players")
+        .select("*")
+        .eq("id", user.id)
+        .maybeSingle();
       setPlayer((mine as Player) ?? null);
       if (mine) {
-        const { data: rows } = await supabase.from("sessions").select("date");
+        const { data: rows } = await supabase
+          .from("sessions")
+          .select("date")
+          .eq("playerId", user.id);
         const dates = (rows ?? []).map((r) => r.date as string);
         setAlreadyLogged(dates.includes(todayKey()));
         setStreak(computeStreak(dates));

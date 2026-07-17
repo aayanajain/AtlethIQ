@@ -149,14 +149,6 @@ CREATE POLICY "players_delete_own"
   TO authenticated
   USING (id = auth.uid());
 
--- Temporary permissive policy for development (remove in production)
-CREATE POLICY "players_dev_all_access"
-  ON players
-  FOR ALL
-  TO anon
-  USING (true)
-  WITH CHECK (true);
-
 -- ---------------------------------------------------------------------------
 -- Column comments (documentation)
 -- ---------------------------------------------------------------------------

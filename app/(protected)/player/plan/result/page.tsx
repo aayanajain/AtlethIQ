@@ -136,8 +136,10 @@ function PlanResult() {
   async function saveToJourney() {
     if (!plan || saveState !== "idle") return;
     setSaveState("saving");
-    const { data: mine } = await supabase.from("players").select("id").limit(1).maybeSingle();
-    const playerId = (mine as { id: string } | null)?.id;
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const playerId = user?.id;
     if (!playerId) {
       setError("Couldn't find your profile to save the plan.");
       setSaveState("idle");
