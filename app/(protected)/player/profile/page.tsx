@@ -163,7 +163,7 @@ export default function ProfilePage() {
       !formData.fullName.trim()
         ? "Full name is required"
         : !formData.dateOfBirth || !isValidYouthAge(formData.dateOfBirth)
-        ? "Enter a valid date of birth (age 10–18)"
+        ? "Enter a valid date of birth (age 10–39)"
         : !formData.gender
         ? "Please select a gender"
         : !formData.position

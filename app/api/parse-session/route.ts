@@ -64,7 +64,7 @@ export async function POST(request: Request) {
     const drillText = drillIds.length ? drillIds.map(drillLabel).join(", ") : "none specified";
 
     const system = `
-You are a football (soccer) performance analyst for youth players aged 10-18.
+You are a football (soccer) performance analyst for players aged 10-39.
 For this player's role, these are the only attributes worth rating:
 ${attrList}
 
