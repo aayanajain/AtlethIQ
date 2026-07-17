@@ -92,6 +92,14 @@ export default function LoginPage() {
         `,
       }}
     >
+      {/* Back to home */}
+      <Link
+        href="/"
+        className="absolute top-8 right-8 z-20 text-sm font-medium text-white/50 transition-colors hover:text-white"
+      >
+        Back to home
+      </Link>
+
       {/* Left Panel - Branding */}
       <div className="relative hidden lg:flex flex-col w-1/2">
         {/* Logo */}

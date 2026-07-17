@@ -76,13 +76,21 @@ export default function SignupPage() {
         `,
       }}
     >
+      {/* Back to home */}
+      <Link
+        href="/"
+        className="absolute top-8 right-8 z-20 text-sm font-medium text-white/50 transition-colors hover:text-white"
+      >
+        Back to home
+      </Link>
+
       {/* Left Panel - Branding */}
       <div className="relative hidden lg:flex flex-col w-1/2">
         {/* Logo */}
         <div className="absolute z-10 top-8 left-8">
           <Link href="/" className="block">
             <Image
-              src="/logo.png?v=2"
+              src="/logo_new.png"
               alt="AthleteIQ"
               width={160}
               height={44}
@@ -113,7 +121,7 @@ export default function SignupPage() {
         <div className="lg:hidden absolute top-8 left-6">
           <Link href="/" className="block">
             <Image
-              src="/logo.png?v=2"
+              src="/logo_new.png"
               alt="AthleteIQ"
               width={140}
               height={38}

@@ -9,12 +9,13 @@ import type { Variants } from "framer-motion";
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
+// Cards grow in with a subtle scale rather than sliding up.
 const card: Variants = {
-  hidden: { opacity: 0, y: 28 },
+  hidden: { opacity: 0, scale: 0.9 },
   visible: (i: number) => ({
     opacity: 1,
-    y: 0,
-    transition: { duration: 0.55, delay: i * 0.08, ease: EASE },
+    scale: 1,
+    transition: { duration: 0.55, delay: i * 0.07, ease: EASE },
   }),
 };
 
@@ -44,7 +45,7 @@ const REVIEWS: Review[] = [
   },
   {
     quote:
-      "The feedback actually judges my keeper on the right things — shot-stopping and distribution, not just goals.",
+      "The feedback actually judges my keeper on the right things, shot-stopping and distribution, not just goals.",
     name: "Amir K.",
     role: "U15 goalkeeper",
     initials: "AK",

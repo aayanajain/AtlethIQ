@@ -41,7 +41,7 @@ export default function SiteFooter() {
               style={{ height: "40px", width: "auto", mixBlendMode: "screen" }}
             />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/45">
-              An affordable AI sports scientist and mentor for young footballers — and a tool that
+              An affordable AI sports scientist and mentor for young footballers, and a tool that
               helps coaches track every player individually.
             </p>
           </div>

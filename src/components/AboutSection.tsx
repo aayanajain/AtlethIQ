@@ -118,7 +118,7 @@ export default function AboutSection() {
                   that guidance simply isn’t accessible.
                 </p>
                 <p>
-                  Talented young players end up training alone, left to guess what to improve — their
+                  Talented young players end up training alone, left to guess what to improve, their
                   potential unseen not because the ability isn’t there, but because the support isn’t.
                   AthletIQ puts a personal AI sports scientist and mentor in every player’s pocket.
                 </p>
