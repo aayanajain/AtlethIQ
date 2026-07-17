@@ -33,13 +33,33 @@ create table if not exists sessions (
 create index if not exists sessions_player_date_idx
   on sessions ("playerId", date);
 
--- Row Level Security — same demo-open policy as players (tighten with real auth).
+-- Row Level Security — each player may only touch their own sessions.
+-- A session's "playerId" equals the owner's players.id, which equals auth.uid().
 alter table sessions enable row level security;
 
 drop policy if exists "demo_sessions_all_access" on sessions;
-create policy "demo_sessions_all_access"
+
+create policy "sessions_select_own"
   on sessions
-  for all
-  to anon, authenticated
-  using (true)
-  with check (true);
+  for select
+  to authenticated
+  using ("playerId" = auth.uid());
+
+create policy "sessions_insert_own"
+  on sessions
+  for insert
+  to authenticated
+  with check ("playerId" = auth.uid());
+
+create policy "sessions_update_own"
+  on sessions
+  for update
+  to authenticated
+  using ("playerId" = auth.uid())
+  with check ("playerId" = auth.uid());
+
+create policy "sessions_delete_own"
+  on sessions
+  for delete
+  to authenticated
+  using ("playerId" = auth.uid());

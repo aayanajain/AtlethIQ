@@ -51,14 +51,25 @@ export default function JourneyPage() {
 
   useEffect(() => {
     async function load() {
-      const { data: mine } = await supabase.from("players").select("*").limit(1).maybeSingle();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+      const { data: mine } = await supabase
+        .from("players")
+        .select("*")
+        .eq("id", user.id)
+        .maybeSingle();
       const me = (mine as Player) ?? null;
       setPlayer(me);
 
       if (me) {
         const [{ data: sess }, { data: pl }] = await Promise.all([
-          supabase.from("sessions").select("*").order("date", { ascending: false }),
-          supabase.from("plans").select("id, horizon, plan, created_at").order("created_at", { ascending: false }),
+          supabase.from("sessions").select("*").eq("playerId", user.id).order("date", { ascending: false }),
+          supabase.from("plans").select("id, horizon, plan, created_at").eq("playerId", user.id).order("created_at", { ascending: false }),
         ]);
 
         const sessionEntries: Entry[] = ((sess as Session[]) ?? []).map((s) => {
