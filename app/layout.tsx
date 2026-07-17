@@ -15,11 +15,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AthletIQ — AI Football Coaching",
+  title: "AthletIQ",
   description:
     "Train smarter with AthletIQ. AI-powered personalized training plans, performance tracking, and live coach interaction — all in one place.",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
+  },
   openGraph: {
-    title: "AthletIQ — AI Football Coaching",
+    title: "AthletIQ",
     description: "Train smart. Play better.",
     type: "website",
   },

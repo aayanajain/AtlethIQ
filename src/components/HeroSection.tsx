@@ -70,7 +70,7 @@ function Navbar() {
         {/* Logo */}
         <Link href="/" className="flex items-center opacity-90 hover:opacity-100 transition-opacity duration-200">
           <Image
-            src="/logo.png"
+            src="/logo_new.png"
             alt="AthleteIQ"
             width={200}
             height={55}
