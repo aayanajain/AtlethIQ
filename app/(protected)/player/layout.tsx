@@ -16,7 +16,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { supabase } from "@/src/lib/supabase";
 
 // ─── DEV MODE TOGGLE ───────────────────────────────────────────────────
-const DEV_MODE = true; // Set to false in production
+const DEV_MODE = false; // Set to false in production
 // ───────────────────────────────────────────────────────────────────────
 
 // The sidebar links. `underDev` marks a page that isn't finished yet.
@@ -26,6 +26,7 @@ const NAV = [
   { href: "/player/plan", label: "Plan", underDev: false },
   { href: "/player/journey", label: "Journey", underDev: false },
   { href: "/player/mentor", label: "AI Mentor", underDev: true },
+  { href: "/player/coach", label: "Coach", underDev: true },
 ];
 
 export default function PlayerLayout({

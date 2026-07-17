@@ -32,7 +32,7 @@ import type { Variants } from "framer-motion";
 import { supabase } from "@/src/lib/supabase";
 
 // ─── DEV MODE TOGGLE ───────────────────────────────────────────────────
-const DEV_MODE = true; // Set to false in production
+const DEV_MODE = false; // Set to false in production
 // ───────────────────────────────────────────────────────────────────────
 import type {
   Player,

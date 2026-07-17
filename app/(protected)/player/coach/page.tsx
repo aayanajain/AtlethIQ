@@ -1,15 +1,16 @@
 "use client";
-// app/(protected)/coach/page.tsx
+// app/(protected)/player/coach/page.tsx
 //
-// Coach dashboard — a football-themed "coming soon" placeholder, matching the
-// player-side AI mentor / coach pages. The squad overview lives behind the
-// gated coach shell (see layout.tsx) and will land here when it's ready.
+// Coach — a football-themed "coming soon" placeholder, matching the AI mentor
+// page. This will become the player's link to their coach (focus directives,
+// messages, reconciliation). Until then: a floating, spinning ball over a faint
+// pitch, on our dark/teal system.
 
 import { motion, useReducedMotion } from "framer-motion";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
-export default function CoachDashboardPage() {
+export default function PlayerCoachPage() {
   const reduce = useReducedMotion();
 
   return (
