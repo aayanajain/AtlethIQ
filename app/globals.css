@@ -24,6 +24,15 @@ html {
   color: #ffffff;
 }
 
+/* Anchor-jump offset. We use ONLY scroll-margin-top on the targets (it is
+   scroller-agnostic and always honoured, unlike scroll-padding which the
+   body-as-scroll-container setup ignored — stacking the two produced the big
+   empty band above centered headings). 90px clears the fixed ~68px navbar with
+   a little breathing room. How-it-works keeps a touch more room so its tall
+   two-column layout reads the way it already does. */
+[id] { scroll-margin-top: 90px; }
+#how-heading { scroll-margin-top: 120px; }
+
 body {
   background-color: #000000;
   color: #ffffff;

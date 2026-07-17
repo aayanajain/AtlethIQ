@@ -43,7 +43,16 @@ const scaleIn: Variants = {
   },
 };
 
-/* ─── Floating Football ──────────────────────────────────────────── */
+/* ─── Nav links (one-word labels → home section anchors) ─────────── */
+const NAV_LINKS: { label: string; href: string }[] = [
+  { label: "Features", href: "#features-heading" },
+  { label: "About", href: "#about-heading" },
+  { label: "Process", href: "#how-heading" },
+  { label: "Coaches", href: "#audience-heading" },
+  { label: "Reviews", href: "#reviews-heading" },
+];
+
+/* ─── Navbar ─────────────────────────────────────────────────────── */
 function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -81,13 +90,13 @@ function Navbar() {
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-8 text-sm text-white/50">
-          {["About", "Features", "Coaches", "Pricing", "Contact"].map((item) => (
+          {NAV_LINKS.map((item) => (
             <a
-              key={item}
-              href="#"
+              key={item.label}
+              href={item.href}
               className="relative font-medium transition-colors duration-250 hover:text-white group"
             >
-              {item}
+              {item.label}
               <span className="absolute left-0 right-0 bottom-[-4px] h-[2px] bg-[#14b8a6] scale-x-0 group-hover:scale-x-100 transition-transform duration-250 origin-left" />
             </a>
           ))}
@@ -103,7 +112,7 @@ function Navbar() {
             className="text-sm font-semibold px-5 py-2 rounded-md text-white border transition-all duration-200 hover:bg-[#22c55e] hover:border-[#22c55e] hover:text-white active:scale-[0.98]"
             style={{ border: "1.5px solid #22c55e", color: "#22c55e" }}
           >
-            Join Academy
+            Get Started
           </Link>
         </div>
 
@@ -126,18 +135,19 @@ function Navbar() {
             exit={{ opacity: 0, height: 0 }}
             className="md:hidden border-t border-white/[0.06] backdrop-blur-xl bg-[#050505]/90 px-6 pb-6 pt-4 space-y-4"
           >
-            {["About", "Features", "Coaches", "Pricing", "Contact"].map((item) => (
+            {NAV_LINKS.map((item) => (
               <a
-                key={item}
-                href="#"
+                key={item.label}
+                href={item.href}
+                onClick={() => setMenuOpen(false)}
                 className="block text-white/50 hover:text-white transition-colors duration-250 py-1 text-sm font-medium"
               >
-                {item}
+                {item.label}
               </a>
             ))}
             <Link href="/signup" className="block text-center font-semibold text-sm px-5 py-2.5 rounded-md text-[#22c55e] mt-3 border"
               style={{ border: "1.5px solid #22c55e" }}>
-              Join Academy
+              Get Started
             </Link>
           </motion.div>
         )}
